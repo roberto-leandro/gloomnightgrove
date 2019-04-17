@@ -1,23 +1,39 @@
 ﻿using UnityEngine;
 
-public abstract class AbstractController : MonoBehaviour, ICollidable, IMovable
+/// <summary>Defines the default behavior of all characters in the game, including enemies and the player.</summary>
+///
+public abstract class AbstractController : MonoBehaviour, IMovable
 {
-    public IMovementStrategy movementStrategy;
-    public Rigidbody2D rigidBody;
-    public Vector2 velocity;
+    [SerializeField] protected IMovementStrategy movementStrategy;
+    [SerializeField] protected Rigidbody2D rigidBody;
 
-    public RaycastHit2D[] FindCollisions(Vector2 direction)
+    // Start is called before the first frame update.
+    public void Start()
     {
-        throw new System.NotImplementedException();
+        // Initialize variables that will be used later on.
+        rigidBody = GetComponent<Rigidbody2D>();
     }
 
-    public void HandleCollision(RaycastHit2D raycast)
-    {
-        throw new System.NotImplementedException();
-    }
-
+    /// <summary>
+    /// Helper method that is the only place where forces should be applied to the character's Rigidbody.
+    /// Should only be called in a FixedUpdate() method.
+    /// </summary>
+    /// </param>Vector2 direction: the direction where the character's transform should be moved to.</param>
     public void Move(Vector2 direction)
     {
-        throw new System.NotImplementedException();
+        // Move the MonoBehavior object's transform according to the desired direction
+        transform.position += (Vector3) direction;
     }
+
+    /// <summary>
+    /// Default implementation of FixedUpdate for all characters. It simply uses the current movementStrategy to figure out where to go and
+    /// calls Move().
+    /// This might be sufficient for some characters, and need to be overridden for others.
+    /// </summary>
+    private void FixedUpdate()
+    {
+        Vector2 movementDirection = movementStrategy.DetermineMovement();
+        Move(movementDirection*Time.deltaTime);
+    }
+    
 }
