@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 
 /// <summary>Defines the default behavior of all characters in the game, including enemies and the player.</summary>
-///
 public abstract class AbstractController : MonoBehaviour, IMovable
 {
     [SerializeField] protected IMovementStrategy movementStrategy;
