@@ -20,8 +20,18 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     /// </param>Vector2 direction: the direction where the character's transform should be moved to.</param>
     public void Move(Vector2 direction)
     {
-        // Move the MonoBehavior object's transform according to the desired direction
-        transform.position += (Vector3) direction;
+        // In order to move we change the velocity of our rididBody
+
+        // Multiply the x velocity by Time.fixedDeltaTime so our phisics our not tied to the machine's framerate
+        direction.x = direction.x * Time.fixedDeltaTime;
+
+        // If no jump is to be performed, we should keep the rigidbody's original velocity
+        if(direction.y == 0)
+        {
+            direction.y = rigidBody.velocity.y;
+        }
+
+        rigidBody.velocity = direction;
     }
 
     /// <summary>
@@ -32,7 +42,8 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     private void FixedUpdate()
     {
         Vector2 movementDirection = movementStrategy.DetermineMovement();
-        Move(movementDirection*Time.deltaTime);
+        
+        Move(movementDirection);
     }
     
 }

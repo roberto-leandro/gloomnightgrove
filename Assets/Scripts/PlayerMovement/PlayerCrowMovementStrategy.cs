@@ -28,16 +28,14 @@ public class PlayerCrowMovementStrategy : AbstractPlayerMovementStrategy
 
                 // Player is not grounded anymore
                 playerController.IsGrounded = false;
-
-                // The jump was performed, set to false
-                jump = false;
             }
+            // The jump was resolved, set to false
+            jump = false;
         }
 
-            // Handle horizontal movement
-            direction.x = horizontalMovement;
-
-        //Debug.Log("the plyaer will move to" + direction.ToString());
+        // Handle horizontal movement
+        direction.x = horizontalMovement;
+        Debug.Log(direction);
         return direction;
     }
 

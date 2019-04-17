@@ -19,17 +19,9 @@ public abstract class AbstractPlayerMovementStrategy : IMovementStrategy
     public void DeterminePlayerInput()
     {
         // Determine horizontal movement
-        float horizontalInput = Input.GetAxis("Horizontal");
-        if(horizontalInput < 0)
-        {
-            horizontalMovement = playerController.MovementSpeed * -1;
-        } else if (horizontalInput > 0)
-        {
-            horizontalMovement = playerController.MovementSpeed;
-        } else
-        {
-            horizontalMovement = 0;
-        }
+        // We use Input.GetAxisRaw to avoid Unity's automatic smoothing to enable the player to stop on a dime
+        // Multiply the input by our movement speed to allow controller users to input analog movement 
+        horizontalMovement = Input.GetAxisRaw("Horizontal") * playerController.MovementSpeed;
 
         // Determine if player wants to jump
         // We only want to change jump if it is already false, changing its value when its true can result in missed inputs
