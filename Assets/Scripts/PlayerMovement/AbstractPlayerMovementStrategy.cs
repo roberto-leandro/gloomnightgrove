@@ -32,7 +32,10 @@ public abstract class AbstractPlayerMovementStrategy : IMovementStrategy
         }
 
         // Determine if player wants to jump
-        jump = Input.GetButtonUp("Jump");
+        // We only want to change jump if it is already false, changing its value when its true can result in missed inputs
+        if (!jump){
+            jump = Input.GetButtonDown("Jump");
+        }
     }
     
     /// <summary>

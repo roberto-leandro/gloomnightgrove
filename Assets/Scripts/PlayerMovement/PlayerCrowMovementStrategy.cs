@@ -13,38 +13,26 @@ public class PlayerCrowMovementStrategy : AbstractPlayerMovementStrategy
         // Handle jump
         if (jump)
         {
-            if (playerController.IsGrounded) {
-                Debug.Log("player normal jumped");
-                direction.y += playerController.JumpForce;
-                playerController.IsGrounded = false;
-            } else if (playerController.IsDoublejumpAvailable)
+            // In crow mode, player can always jump if they are grounded
+            // They can also jump if airborne and they have a doublejump available
+            if (playerController.IsGrounded || playerController.IsDoublejumpAvailable)
             {
-                Debug.Log("player double jumped");
+                if (!playerController.IsGrounded)
+                {
+                    // Remove the player's double jump
+                    playerController.IsDoublejumpAvailable = false;
+                }
+
+                // Add the jump direction
                 direction.y += playerController.JumpForce;
+
+                // Player is not grounded anymore
                 playerController.IsGrounded = false;
-                playerController.IsDoublejumpAvailable = false;
+
+                // The jump was performed, set to false
+                jump = false;
             }
         }
-
-            /*if (jump)
-            {
-                // In crow mode, player can always jump if they are grounded
-                // They can also jump if airborne and they have a doublejump available
-                if (playerController.IsGrounded || playerController.IsDoublejumpAvailable)
-                {
-                    // Add the jump direction
-                    direction.y += playerController.JumpForce;
-
-                    if (!playerController.IsGrounded)
-                    {
-                        // Remove the player's double jump
-                        playerController.IsDoublejumpAvailable = false;
-                    }
-
-                    // Player is not grounded anymore
-                    playerController.IsGrounded = false; 
-                }
-            }*/
 
             // Handle horizontal movement
             direction.x = horizontalMovement;
