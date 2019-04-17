@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public abstract class AbstractController : MonoBehaviour, ICollidable, IMovable
+public abstract class AbstractController : MonoBehaviour, IMovable
 {
     public IMovementStrategy movementStrategy;
     public Rigidbody2D rigidBody;
