@@ -37,7 +37,7 @@ public class PlayerController : AbstractController
     void Update()
 	{
         // Check if the current animal should be switched
-        if (Input.GetButton("SwitchAnimal"))
+        if (Input.GetButtonDown("SwitchAnimal"))
         {
             SwitchAnimal();
         }
