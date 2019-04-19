@@ -4,30 +4,25 @@ using UnityEngine;
 
 public class PlayerController : AbstractController
 {
-
-    // Tweaks to player movement
-    [SerializeField] private float movementSpeed;
-    public float MovementSpeed { get { return movementSpeed; } }
-    [SerializeField] private float jumpForce;
-    public float JumpForce { get { return jumpForce; } }
-
+    // The controls inputted by the player
+    protected bool jump;
+    protected float horizontalMovement;
+    
     // State info
     private bool crowIsActive = true; // crow if true and cat if false.
-    private bool grounded;
-    private bool touchingWall;
     private bool doublejumpAvailable;
 
     // Properties to access the variables
-    public bool IsGrounded { get { return grounded; } set { grounded = value; } }
-    public bool IsTouchingWall { get { return touchingWall; } set { touchingWall = value; } }
+    public bool Jump { get { return jump; } set { jump = value; } }
+    public float HorizontalMovement { get { return horizontalMovement; } }
     public bool IsDoublejumpAvailable { get { return doublejumpAvailable; } set { doublejumpAvailable = value; } }
 
     // Start is called before the first frame update.
-    public void Start()
+    public new void Start()
     {
         // Initialize variables that will be used later on.
         rigidBody = GetComponent<Rigidbody2D>();
-        movementStrategy = new PlayerCrowMovementStrategy(this);
+        movementStrategy = new PlayerCrowMovementStrategy(this); // Default animal is crow
     }
 
     // Update is called once per frame
@@ -39,7 +34,26 @@ public class PlayerController : AbstractController
             SwitchAnimal();
         }
 
-        ((AbstractPlayerMovementStrategy)movementStrategy).DeterminePlayerInput();
+        // Read player input here 
+        DeterminePlayerInput();
+    }
+
+    /// <summary>
+    /// Reads player input and sets the appropriate info for the movement startegy to use.
+    /// </summary>
+    public void DeterminePlayerInput()
+    {
+        // Determine horizontal movement
+        // We use Input.GetAxisRaw to avoid Unity's automatic smoothing to enable the player to stop on a dime
+        // Multiply the input by our movement speed to allow controller users to input analog movement 
+        horizontalMovement = Input.GetAxisRaw("Horizontal") * movementSpeed;
+
+        // Determine if player wants to jump
+        // We only want to change jump if it is already false, changing its value when its true can result in missed inputs
+        if (!jump)
+        {
+            jump = Input.GetButtonDown("Jump");
+        }
     }
 
     /// <summary>
