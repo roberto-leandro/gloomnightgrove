@@ -10,16 +10,19 @@ public class PlayerController : AbstractController
     public float MovementSpeed { get { return movementSpeed; } }
     [SerializeField] private float jumpForce;
     public float JumpForce { get { return jumpForce; } }
+    public Rigidbody2D Rigidbody { get { return rigidBody; } }
 
     // State info
-    private bool crowIsActive = true; // crow if true and cat if false.
+    private bool crowIsActive = false; // crow if true and cat if false.
     private bool grounded;
-    private bool touchingWall;
+    private bool touchingWallOnLeft;
+    private bool touchingWallOnRight;
     private bool doublejumpAvailable;
 
     // Properties to access the variables
     public bool IsGrounded { get { return grounded; } set { grounded = value; } }
-    public bool IsTouchingWall { get { return touchingWall; } set { touchingWall = value; } }
+    public bool IsTouchingWallOnLeft { get { return touchingWallOnLeft; } set { touchingWallOnLeft = value; } }
+    public bool IsTouchingWallOnRight { get { return touchingWallOnRight; } set { touchingWallOnRight = value; } }
     public bool IsDoublejumpAvailable { get { return doublejumpAvailable; } set { doublejumpAvailable = value; } }
 
     // Start is called before the first frame update.
@@ -55,9 +58,11 @@ public class PlayerController : AbstractController
         if (crowIsActive)
         {
             movementStrategy = new PlayerCatMovementStrategy(this);
+            Debug.Log("Cat selected");
         } else
         {
             movementStrategy = new PlayerCrowMovementStrategy(this);
+            Debug.Log("Crow selected");
         }
         
         // Flip the currently active animal boolean.
@@ -72,7 +77,52 @@ public class PlayerController : AbstractController
             // Set the player as grounded and refund their doublejump
             grounded = true;
             doublejumpAvailable = true;
-            Debug.Log("player was grounded");
+            Debug.Log("Player is grounded");
+        }
+
+        // Check if the player touched a wall
+        if (collider.gameObject.CompareTag("Wall"))
+        {
+            // Center point of the wall
+            Vector3 colliderCenter = collider.collider.bounds.center;
+
+            // Point of contact between the player and the wall
+            Vector3 colliderContactPoint = collider.contacts[0].point;
+            
+
+            // See if the player is touching a wall on its left or on its right
+            if (colliderCenter.x < colliderContactPoint.x)
+            {
+                // Wall is on the left
+                touchingWallOnLeft = true;
+                Debug.Log("Player is touching a wall on its left");
+            }
+            else if(colliderCenter.x > colliderContactPoint.x)
+            {
+                // Wall is on the right
+                touchingWallOnRight = true;
+                Debug.Log("Player is touching a wall on its right");
+            }
+            
+        }
+        
+    }
+
+    private void OnCollisionExit2D(Collision2D collider)
+    {
+        if (collider.gameObject.CompareTag("Ground"))
+        {
+            // Player is not grounded
+            grounded = false;
+            Debug.Log("Player is not grounded");
+        }
+
+        if (collider.gameObject.CompareTag("Wall"))
+        {
+            // Player is not touching a wall
+            touchingWallOnLeft = false;
+            touchingWallOnRight = false;
+            Debug.Log("Player stopped touching a wall");
         }
     }
 }

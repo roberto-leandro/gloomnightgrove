@@ -25,9 +25,7 @@ public class PlayerCrowMovementStrategy : AbstractPlayerMovementStrategy
 
                 // Add the jump direction
                 direction.y += playerController.JumpForce;
-
-                // Player is not grounded anymore
-                playerController.IsGrounded = false;
+                
             }
             // The jump was resolved, set to false
             jump = false;
