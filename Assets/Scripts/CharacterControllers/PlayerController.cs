@@ -4,45 +4,67 @@ using UnityEngine;
 
 public class PlayerController : AbstractController
 {
-
-    // Tweaks to player movement
-    [SerializeField] private float movementSpeed;
-    public float MovementSpeed { get { return movementSpeed; } }
-    [SerializeField] private float jumpForce;
-    public float JumpForce { get { return jumpForce; } }
-    public Rigidbody2D Rigidbody { get { return rigidBody; } }
-
     // State info
-    private bool crowIsActive = false; // crow if true and cat if false.
-    private bool grounded;
+    private bool crowIsActive = true; // crow if true and cat if false.
     private bool touchingWallOnLeft;
     private bool touchingWallOnRight;
     private bool doublejumpAvailable;
 
     // Properties to access the variables
-    public bool IsGrounded { get { return grounded; } set { grounded = value; } }
     public bool IsTouchingWallOnLeft { get { return touchingWallOnLeft; } set { touchingWallOnLeft = value; } }
     public bool IsTouchingWallOnRight { get { return touchingWallOnRight; } set { touchingWallOnRight = value; } }
     public bool IsDoublejumpAvailable { get { return doublejumpAvailable; } set { doublejumpAvailable = value; } }
+    
+    // The controls inputted by the player
+    protected bool jump;
+    protected float horizontalMovement;
+    private bool switchAnimal;
+
+    public bool Jump { get { return jump; } set { jump = value; } }
+    public float HorizontalMovement { get { return horizontalMovement; } }
+
+    // Wall jumping tweaks
+    [SerializeField] private float wallJumpUpwardsForce;
+    public float WallJumpUpwardsForce { get { return wallJumpUpwardsForce; }  }
+    [SerializeField] private float wallJumpSidewaysForce;
+    public float WallJumpSidewaysForce { get { return wallJumpSidewaysForce; } }
+    [SerializeField] private int walljumpMovementDuration = 25;
+    public int WalljumpMovementDuration { get { return walljumpMovementDuration; } }
 
     // Start is called before the first frame update.
-    public void Start()
+    public new void Start()
     {
         // Initialize variables that will be used later on.
         rigidBody = GetComponent<Rigidbody2D>();
-        movementStrategy = new PlayerCrowMovementStrategy(this);
+        movementStrategy = new PlayerCrowMovementStrategy(this); // Default animal is crow
     }
 
     // Update is called once per frame
     void Update()
 	{
-        // Check if the current animal should be switched
-        if (Input.GetButtonDown("SwitchAnimal"))
-        {
-            SwitchAnimal();
-        }
+        // Read player each update 
+        ReadPlayerInput();
+    }
 
-        ((AbstractPlayerMovementStrategy)movementStrategy).DeterminePlayerInput();
+    /// <summary>
+    /// Reads player input and sets the appropriate info for the movement startegy to use.
+    /// </summary>
+    public void ReadPlayerInput()
+    {
+        // Check if the current animal should be switched
+        switchAnimal = Input.GetButtonDown("SwitchAnimal");
+
+        // Determine horizontal movement
+        // We use Input.GetAxisRaw to avoid Unity's automatic smoothing to enable the player to stop on a dime
+        // Multiply the input by our movement speed to allow controller users to input analog movement 
+        horizontalMovement = Input.GetAxisRaw("Horizontal") * movementSpeed;
+
+        // Determine if player wants to jump
+        // We only want to change jump if it is already false, changing its value when its true can result in missed inputs
+        if (!jump)
+        {
+            jump = Input.GetButtonDown("Jump");
+        }
     }
 
     /// <summary>
@@ -67,6 +89,18 @@ public class PlayerController : AbstractController
         
         // Flip the currently active animal boolean.
         crowIsActive = !crowIsActive;
+    }
+
+    /// <summary>
+    /// Handle animal switching in FixedUpdate().
+    /// </summary>
+    protected override void AdditionalFixedUpdateOperations()
+    {
+        if (switchAnimal)
+        {
+            SwitchAnimal();
+            switchAnimal = false;
+        }
     }
 
     void OnCollisionEnter2D(Collision2D collider)
@@ -125,4 +159,5 @@ public class PlayerController : AbstractController
             Debug.Log("Player stopped touching a wall");
         }
     }
+
 }

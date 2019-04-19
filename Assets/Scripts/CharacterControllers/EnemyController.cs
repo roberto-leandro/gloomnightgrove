@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class EnemyController : AbstractController
 {
-	// Start is called before the first frame update
-	void Start()
+
+    // Start is called before the first frame update
+    void Start()
 	{
 		
 	}
@@ -15,4 +16,9 @@ public class EnemyController : AbstractController
 	{
 		
 	}
+
+    protected override void AdditionalFixedUpdateOperations()
+    {
+        throw new System.NotImplementedException();
+    }
 }
