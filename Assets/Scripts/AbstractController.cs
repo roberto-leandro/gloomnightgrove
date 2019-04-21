@@ -79,7 +79,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
 
     /// <summary>
     /// Default implementation of FixedUpdate for all characters. It simply uses the current movementStrategy to figure out where to go and
-    /// calls Move().
+    /// calls Move() in that direction.
     /// This method is written as the highest form of abstraction for updating all characters in the game, under the
     /// assumption that every character takes some sort of decision on where to move and then performs that movement.
     /// If this does not work for some characters it can be overrridden in their controller, but this should be avoided.
@@ -92,10 +92,9 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     }
 
     /// <summary>
-    /// This method may be used by subclasses to perform operations during fixed update other than moving. 
+    /// This method may be used by subclasses to perform operations during fixed update other than moving, such as switching animal for the player character.
     /// This allows us add custom operations for each controller in FixedUpdate without overriding FixedUpdate(), as its only implementation should be in this class.
     /// </summary>
     protected abstract void AdditionalFixedUpdateOperations();
-
-
+    
 }

@@ -53,7 +53,7 @@ public class PlayerCatMovementStrategy : AbstractPlayerMovementStrategy
             playerController.Jump = false;
         }
 
-        Debug.Log("fixedUpdatesSinceLastWallJump " + lastWalljumpCounter);
+        //Debug.Log("fixedUpdatesSinceLastWallJump " + lastWalljumpCounter);
 
         // Resolve horizontal movement
         if(lastWalljumpCounter == 0)
