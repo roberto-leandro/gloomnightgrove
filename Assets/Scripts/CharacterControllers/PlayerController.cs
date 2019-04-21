@@ -10,9 +10,11 @@ public class PlayerController : AbstractController
     private bool touchingWallOnRight;
     private bool doublejumpAvailable;
 
-    // Used to store contacts when detecting a collision reusing the array generated less work for c#'s garbage collector
+    // Used to store contacts when detecting a collision, as reusing the same array generates less work for c#'s garbage collector
     ContactPoint2D[] collisionContacts;
 
+    // Collisions that need to be handled when they exitare entered into this dictionary as they enter, specifying their type
+    // This way its not necesary to figure out the type of collision on exit, instead we just obtain it from the dict
     Dictionary<GameObject, int> currentCollisions; // 0 right wall, 1 left wall, 2 ground
 
     // Properties to access the variables
