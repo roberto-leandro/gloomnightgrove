@@ -24,8 +24,16 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     [SerializeField] private bool applyFallMultiplier = false;
 
     // State variables common to most characters
-    protected bool grounded;
-    public bool IsGrounded { get { return grounded; } set { grounded = value; } }
+    // Current walls and ground are stored to be able to handle them properly on collision exits
+    protected GameObject currentGround;
+    public bool IsGrounded { get { return currentGround != null; } }
+    protected GameObject currentLeftWall;
+    public bool IsTouchingWallOnLeft { get { return currentLeftWall != null; } }
+    protected GameObject currentRightWall;
+    public bool IsTouchingWallOnRight { get { return currentRightWall != null; } }
+
+    // Used to store contacts when detecting a collision, as reusing the same array generates less work for c#'s garbage collector
+    protected ContactPoint2D[] collisionContacts;
 
     // Start is called before the first frame update.
     public void Start()

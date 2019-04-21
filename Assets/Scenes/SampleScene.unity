@@ -385,7 +385,7 @@ MonoBehaviour:
   fallMultiplier: 1.05
   applyFallMultiplier: 1
   wallJumpUpwardsForce: 5
-  wallJumpSidewaysForce: 100
+  wallJumpSidewaysForce: 250
   walljumpMovementDuration: 25
 --- !u!212 &896544227
 SpriteRenderer:
