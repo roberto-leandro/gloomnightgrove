@@ -382,11 +382,12 @@ MonoBehaviour:
   rigidBody: {fileID: 0}
   movementSpeed: 290
   jumpForce: 8
-  fallMultiplier: 1.05
+  fallMultiplier: 1.2
   applyFallMultiplier: 1
   wallJumpUpwardsForce: 5
   wallJumpSidewaysForce: 250
   walljumpMovementDuration: 25
+  moveInfluenceAfterWalljump: 0.25
 --- !u!212 &896544227
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -425,7 +426,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 36587045e010ec84aa35a9ff2a488267, type: 3}
-  m_Color: {r: 1, g: 0.6862745, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

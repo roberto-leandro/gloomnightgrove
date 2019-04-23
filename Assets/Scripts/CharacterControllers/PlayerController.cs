@@ -7,7 +7,10 @@ public class PlayerController : AbstractController
     // State info
     private bool crowIsActive = true; // crow if true and cat if false.
     private bool doublejumpAvailable;
-    public bool IsDoublejumpAvailable { get { return doublejumpAvailable; } set { doublejumpAvailable = value; } }
+
+    // State variables to handle wall jumps
+    private int lastWalljumpCounter = 0;
+    private bool lastWalljumpDirection; // true for right, false for left
 
     // The controls inputted by the player
     protected bool jump;
@@ -16,6 +19,9 @@ public class PlayerController : AbstractController
 
     public bool Jump { get { return jump; } set { jump = value; } }
     public float HorizontalMovement { get { return horizontalMovement; } }
+    public bool IsDoublejumpAvailable { get { return doublejumpAvailable; } set { doublejumpAvailable = value; } }
+    public bool LastWalljumpDirection { get { return lastWalljumpDirection; } set { lastWalljumpDirection = value; } }
+    public int LastWalljumpCounter { get { return lastWalljumpCounter; } set { lastWalljumpCounter = value; } }
 
     // Wall jumping tweaks
     [SerializeField] private float wallJumpUpwardsForce;
@@ -23,31 +29,39 @@ public class PlayerController : AbstractController
     [SerializeField] private float wallJumpSidewaysForce;
     public float WallJumpSidewaysForce { get { return wallJumpSidewaysForce; } }
     [SerializeField] private int walljumpMovementDuration = 25;
-    public int WalljumpMovementDuration { get { return walljumpMovementDuration; } }
+    public int HinderedMovementAfterWalljumpDuration { get { return walljumpMovementDuration; } }
+    [SerializeField] private float moveInfluenceAfterWalljump = 0.25f;
+    public float MoveInfluenceAfterWalljump { get { return moveInfluenceAfterWalljump; } }
 
-    private BoxCollider2D CharacterCollider;
+    // Cache Unity objects that are used frequently to avoid getting them every time
+    private BoxCollider2D characterCollider;
+    private SpriteRenderer characterRenderer;
 
     // Start is called before the first frame update.
     public new void Start()
     {
         // Initialize variables that will be used later on.
+        // Unity objects
         rigidBody = GetComponent<Rigidbody2D>();
-        movementStrategy = new PlayerCrowMovementStrategy(this); // Default animal is crow
-        CharacterCollider = GetComponent<BoxCollider2D>();
+        characterCollider = GetComponent<BoxCollider2D>();
+        characterRenderer = GetComponent<SpriteRenderer>();
         collisionContacts = new ContactPoint2D[2];
+
+        // Custom stuff
+        movementStrategy = new PlayerCrowMovementStrategy(this); // Default animal is crow
     }
 
     // Update is called once per frame
     void Update()
 	{
-        // Read player each update 
+        // Read player input each update 
         ReadPlayerInput();
     }
 
     /// <summary>
     /// Reads player input and sets the appropriate info for the movement startegy to use.
     /// </summary>
-    public void ReadPlayerInput()
+    private void ReadPlayerInput()
     {
         // Determine horizontal movement
         // We use Input.GetAxisRaw to avoid Unity's automatic smoothing to enable the player to stop on a dime
@@ -82,10 +96,12 @@ public class PlayerController : AbstractController
         if (crowIsActive)
         {
             movementStrategy = new PlayerCatMovementStrategy(this);
+            characterRenderer.color = new Color32(255, 175, 255, 255);
             Debug.Log("Cat selected");
         } else
         {
             movementStrategy = new PlayerCrowMovementStrategy(this);
+            characterRenderer.color = Color.black;
             Debug.Log("Crow selected");
         }
         
@@ -132,7 +148,7 @@ public class PlayerController : AbstractController
                 collisionPoints[0].point.y != collisionPoints[1].point.y)
         {
             // find the wall's direction
-            if (collisionPoints[0].point.x < CharacterCollider.bounds.center.x)
+            if (collisionPoints[0].point.x < characterCollider.bounds.center.x)
             {
                 // left wall
                 return 1;

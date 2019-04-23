@@ -35,7 +35,8 @@ public class PlayerCrowMovementStrategy : AbstractPlayerMovementStrategy
         }
 
         // Handle horizontal movement
-        direction.x = playerController.HorizontalMovement;
+        direction += base.DetermineHorizontalMovement();
+
         return direction;
     }
 
