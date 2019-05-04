@@ -1,16 +1,17 @@
 ﻿using UnityEngine;
 
-/// <summary>Defines the default behavior of all characters in the game, including enemies and the player.</summary>
+/// <summary>
+/// Defines the default behavior of all characters in the game, including enemies and the player.
+/// </summary>
 public abstract class AbstractController : MonoBehaviour, IMovable
 {
 
     // Cache unity's rigidbody object so we don't need to get it every time
-    [SerializeField] protected Rigidbody2D rigidBody;
-    [SerializeField] protected Animator animator;
+    protected Rigidbody2D rigidBody;
     protected SpriteRenderer spriteRenderer;
 
     // A strategy that will define how each concrete controller moves the character
-    [SerializeField] protected IMovementStrategy movementStrategy;
+    public IMovementStrategy movementStrategy;
 
     // How fast the character moves
     [SerializeField] protected float movementSpeed = 200;
@@ -35,18 +36,19 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     protected GameObject currentRightWall;
     public bool IsTouchingWallOnRight { get { return currentRightWall != null; } }
 
-    protected bool isLookingRight = true;
+    protected bool isFacingRight = true;
+    public bool IsFacingRight { get { return isFacingRight; } }
 
     // Used to store contacts when detecting a collision, as reusing the same array generates less work for c#'s garbage collector
     protected ContactPoint2D[] collisionContactPoints;
 
     // Start is called before the first frame update.
-    public void Start()
+    public virtual void Start()
     {
         // Initialize variables that will be used later on.
         rigidBody = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        collisionContactPoints = new ContactPoint2D[2];
     }
 
     /// <summary>
@@ -74,16 +76,26 @@ public abstract class AbstractController : MonoBehaviour, IMovable
 
         // Move by setting the rigidbody's velocity
         rigidBody.velocity = direction;
+    }
 
-        // Set the parameter for our animation
-        animator.SetFloat("Speed", Mathf.Abs(direction.x));
-
-        bool flip = (direction.x > 0.01 && !isLookingRight) || (direction.x < -0.01 && isLookingRight);
-        if (flip)
+    /// <summary>
+    /// Checks if the character's direction should be flipped by comparing the character's movement direction and the direction currently being faced.
+    /// </summary>
+    protected void ManageFlip() {
+        if ((rigidBody.velocity.x > 0.01 && !isFacingRight) || (rigidBody.velocity.x < -0.01 && isFacingRight))
         {
-            spriteRenderer.flipX = isLookingRight;
-            isLookingRight = !isLookingRight;
+            Flip();
         }
+    }
+
+    /// <summary>
+    /// Flips the character. 
+    /// The flip is performed by negating the character's rigidbody.transform.LocalScale value, so that both the sprite and the colllider are flipped.
+    /// </summary>
+    protected void Flip()
+    {
+        rigidBody.transform.localScale = new Vector2(transform.localScale.x * -1, transform.localScale.y);
+        isFacingRight = !isFacingRight;
     }
 
     /// <summary>
@@ -113,6 +125,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     {
         Vector2 movementDirection = movementStrategy.DetermineMovement();
         Move(movementDirection);
+        ManageFlip();
         AdditionalFixedUpdateOperations();
     }
 
@@ -120,6 +133,181 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     /// This method may be used by subclasses to perform operations during fixed update other than moving, such as switching animal for the player character.
     /// This allows us add custom operations for each controller in FixedUpdate without overriding FixedUpdate(), as its only implementation should be in this class.
     /// </summary>
-    protected abstract void AdditionalFixedUpdateOperations();
+    protected virtual void AdditionalFixedUpdateOperations(){}
+
+    /// <summary>
+    /// Iterates through a Collision2D's list of ContactPoint2D objects, checking the normal of each point to determine what type of
+    /// terrain the character is touching.
+    /// Because we are using a box collider, the following logic is used:
+    ///     normal.x ==  1 -> ground collision
+    ///     normal.y ==  1 -> right wall collision
+    ///     normal.y == -1 -> left wall collisiojn
+    /// 
+    /// When a type of collision is determined, we store the game object collided against in the appropriate variable (currentGround, currentLeftWall or currentRightWall).
+    /// </summary>
+    /// <param name="collision"></param>
+    protected void ParseTerrainCollisionContactPoints(Collision2D collision, out bool isGround, out bool isLeftWall, out bool isRightWall)
+    {
+        // Get the contact points from the collision object, store it in the collisionContactPoints array
+        int contactCount = collision.GetContacts(collisionContactPoints);
+
+        isGround = false;
+        isLeftWall = false;
+        isRightWall = false;
+
+        // Parse the points to determine what type of terrain is being collided against
+        foreach (ContactPoint2D point in collisionContactPoints)
+        {
+            // Check the point's normals to determine the type of collision
+            // Only overwrite each bool of it wasn't already true
+            isLeftWall = isLeftWall || point.normal.x == 1;
+            isRightWall = isRightWall || point.normal.x == -1;
+            isGround = isGround || point.normal.y == 1;
+        }
+    }
+
+    /// <summary>
+    /// Called by Unity whenever a collision occurs.
+    /// If the collision is against terrain, we check whether it is ground or a wall and set the appropriate state variable to the game 
+    /// object the character collided against.
+    /// TODO enemy collisions.
+    /// </summary>
+    /// <param name="collision"></param>
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        // Handle terrain collisions
+        if (collision.gameObject.CompareTag("Terrain"))
+        {
+            ParseTerrainCollisionContactPoints(collision, out bool isGround, out bool isLeftWall, out bool isRightWall);
+
+            if (isLeftWall)
+            {
+                OnLeftWallCollisionEnter(collision);
+            }
+
+            if (isRightWall)
+            {
+                OnRightWallCollisionEnter(collision);
+            }
+            
+            if (isGround)
+            {
+                OnGroundCollisionEnter(collision);
+            }
+
+        }
+        else if (collision.gameObject.CompareTag("Enemy"))
+        {
+            OnEnemyCollisionEnter(collision);
+        }
+    }
     
+    /// <summary>
+    /// Called by Unity on all frames between the ones where a collision started and ened.
+    /// If the collision is against terrain, we check whether it is ground or a wall and set the appropriate state variable to the
+    /// object the character collided against.
+    /// </summary>
+    /// <param name="collision"></param>
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        // Handle terrain collisions
+        if (collision.gameObject.CompareTag("Terrain"))
+        {
+            ParseTerrainCollisionContactPoints(collision, out bool isGround, out bool isLeftWall, out bool isRightWall);
+
+            if (isLeftWall)
+            {
+                OnLeftWallCollisionStay(collision);
+            }
+            else if (IsTouchingWallOnLeft && currentLeftWall == collision.gameObject)
+            {
+                currentLeftWall = null;
+            }
+
+            if (isRightWall)
+            {
+                OnRightWallCollisionStay(collision);
+            }
+            else if (IsTouchingWallOnRight && currentRightWall == collision.gameObject)
+            {
+                currentRightWall = null;
+            }
+
+            if (isGround)
+            {
+                OnGroundCollisionStay(collision);
+            }
+            else if (IsGrounded && currentGround == collision.gameObject)
+            {
+                currentGround = null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Called by Unity whenever a collision ends.
+    /// If the collision is against terrain, we check whether it is ground or a wall and set the appropriate state variable to null.
+    /// </summary>
+    /// <param name="collision"></param>
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+
+        // Handle terrain collisions
+        if (collision.gameObject.CompareTag("Terrain"))
+        {
+            if (collision.gameObject == currentGround)
+            {
+                // Collision was ground
+                currentGround = null;
+                Debug.Log("Player is NOT grounded");
+            }
+            else if (collision.gameObject == currentLeftWall)
+            {
+                // Collision was a left wall
+                currentLeftWall = null;
+                Debug.Log("Player is NOT touching a wall on the left");
+            }
+            else if (collision.gameObject == currentRightWall)
+            {
+                // Collision was a right wall
+                currentRightWall = null;
+                Debug.Log("Player is NOT touching a wall on the right");
+            }
+        }
+    }
+
+    protected virtual void OnGroundCollisionEnter(Collision2D collision)
+    {
+        currentGround = collision.gameObject;
+        Debug.Log("Player is grounded");
+    }
+
+    protected virtual void OnEnemyCollisionEnter(Collision2D collision){}
+
+    protected virtual void OnGroundCollisionStay(Collision2D collision)
+    {
+        currentGround = collision.gameObject;
+    }
+
+    protected virtual void OnRightWallCollisionEnter(Collision2D collision)
+    {
+        currentRightWall = collision.gameObject;
+        Debug.Log("Player is touching a wall on the right");
+    }
+
+    protected virtual void OnRightWallCollisionStay(Collision2D collision)
+    {
+        currentRightWall = collision.gameObject;
+    }
+
+    protected virtual void OnLeftWallCollisionEnter(Collision2D collision)
+    {
+        currentLeftWall = collision.gameObject;
+        Debug.Log("Player is touching a wall on the left");
+    }
+
+    protected virtual void OnLeftWallCollisionStay(Collision2D collision)
+    {
+        currentLeftWall = collision.gameObject;
+    }
 }

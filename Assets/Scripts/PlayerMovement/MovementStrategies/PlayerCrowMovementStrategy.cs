@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Defines the player's movement when the current animal is the crow, including the double jump mechanic.
+/// </summary>
 public class PlayerCrowMovementStrategy : AbstractPlayerMovementStrategy
 {
-
     public PlayerCrowMovementStrategy(PlayerController controller) : base(controller) { }
 
     /// <summary>
@@ -14,24 +16,24 @@ public class PlayerCrowMovementStrategy : AbstractPlayerMovementStrategy
         Vector2 direction = new Vector2();
 
         // Handle jump
-        if (playerController.Jump)
+        if (characterController.Jump)
         {
             // In crow mode, player can always jump if they are grounded
             // They can also jump if airborne and they have a doublejump available
-            if (playerController.IsGrounded || playerController.IsDoublejumpAvailable)
+            if (characterController.IsGrounded || characterController.IsDoublejumpAvailable)
             {
-                if (!playerController.IsGrounded)
+                if (!characterController.IsGrounded)
                 {
                     // Remove the player's double jump
-                    playerController.IsDoublejumpAvailable = false;
+                    characterController.IsDoublejumpAvailable = false;
                 }
 
                 // Add the jump direction
-                direction.y += playerController.JumpForce;   
+                direction.y += characterController.JumpForce;   
             }
 
             // The jump was resolved, set to false
-            playerController.Jump = false;
+            characterController.Jump = false;
         }
 
         // Handle horizontal movement

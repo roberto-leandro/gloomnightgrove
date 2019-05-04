@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyController : AbstractController
+public class KromavController : EnemyController
 {
 
     // Start is called before the first frame update
@@ -16,9 +16,4 @@ public class EnemyController : AbstractController
 	{
 		
 	}
-
-    protected override void AdditionalFixedUpdateOperations()
-    {
-        throw new System.NotImplementedException();
-    }
 }
