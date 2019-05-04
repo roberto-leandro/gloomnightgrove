@@ -34,7 +34,6 @@ public class PlayerController : AbstractController
 
     // Cache Unity objects that are used frequently to avoid getting them every time
     private BoxCollider2D characterCollider;
-    private SpriteRenderer characterRenderer;
 
     // Start is called before the first frame update.
     public new void Start()
@@ -43,7 +42,8 @@ public class PlayerController : AbstractController
         // Unity objects
         rigidBody = GetComponent<Rigidbody2D>();
         characterCollider = GetComponent<BoxCollider2D>();
-        characterRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
         collisionContactPoints = new ContactPoint2D[2];
 
         // Custom stuff
@@ -95,12 +95,12 @@ public class PlayerController : AbstractController
         if (crowIsActive)
         {
             movementStrategy = new PlayerCatMovementStrategy(this);
-            characterRenderer.color = new Color32(255, 175, 255, 255);
+            spriteRenderer.color = new Color32(255, 175, 255, 255);
             Debug.Log("Cat selected");
         } else
         {
             movementStrategy = new PlayerCrowMovementStrategy(this);
-            characterRenderer.color = Color.black;
+            spriteRenderer.color = Color.black;
             Debug.Log("Crow selected");
         }
         
@@ -183,7 +183,6 @@ public class PlayerController : AbstractController
             // Check y for ground
             if (isGround)
             {
-                justLanded = true;
                 doublejumpAvailable = true;
                 currentGround = collision.gameObject;
                 Debug.Log("Player is grounded");

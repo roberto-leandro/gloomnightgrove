@@ -6,6 +6,8 @@ public abstract class AbstractController : MonoBehaviour, IMovable
 
     // Cache unity's rigidbody object so we don't need to get it every time
     [SerializeField] protected Rigidbody2D rigidBody;
+    [SerializeField] protected Animator animator;
+    protected SpriteRenderer spriteRenderer;
 
     // A strategy that will define how each concrete controller moves the character
     [SerializeField] protected IMovementStrategy movementStrategy;
@@ -28,12 +30,12 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     // Current walls and ground are stored to be able to handle them properly on collision exits
     protected GameObject currentGround;
     public bool IsGrounded { get { return currentGround != null; } }
-    protected bool justLanded = false; // Used to signal the Move() method to set y velocity to 0, to avoid clipping into the ground
-    public bool JustLanded { get { return justLanded; } set { justLanded = value; } }
     protected GameObject currentLeftWall;
     public bool IsTouchingWallOnLeft { get { return currentLeftWall != null; } }
     protected GameObject currentRightWall;
     public bool IsTouchingWallOnRight { get { return currentRightWall != null; } }
+
+    protected bool isLookingRight = true;
 
     // Used to store contacts when detecting a collision, as reusing the same array generates less work for c#'s garbage collector
     protected ContactPoint2D[] collisionContactPoints;
@@ -43,6 +45,8 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     {
         // Initialize variables that will be used later on.
         rigidBody = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     /// <summary>
@@ -68,15 +72,18 @@ public abstract class AbstractController : MonoBehaviour, IMovable
         // Calculate fall multiplier
         direction = DetermineFallMultiplier(direction);
 
-        /*if (test)
-        {
-            Debug.Log("test was true, setting false");
-            test = false;
-            direction.y = 0;
-        }*/
-
         // Move by setting the rigidbody's velocity
         rigidBody.velocity = direction;
+
+        // Set the parameter for our animation
+        animator.SetFloat("Speed", Mathf.Abs(direction.x));
+
+        bool flip = (direction.x > 0.01 && !isLookingRight) || (direction.x < -0.01 && isLookingRight);
+        if (flip)
+        {
+            spriteRenderer.flipX = isLookingRight;
+            isLookingRight = !isLookingRight;
+        }
     }
 
     /// <summary>
