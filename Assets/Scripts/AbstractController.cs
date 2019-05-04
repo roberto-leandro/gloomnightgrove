@@ -3,6 +3,7 @@
 /// <summary>Defines the default behavior of all characters in the game, including enemies and the player.</summary>
 public abstract class AbstractController : MonoBehaviour, IMovable
 {
+
     // Cache unity's rigidbody object so we don't need to get it every time
     [SerializeField] protected Rigidbody2D rigidBody;
 
@@ -27,13 +28,15 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     // Current walls and ground are stored to be able to handle them properly on collision exits
     protected GameObject currentGround;
     public bool IsGrounded { get { return currentGround != null; } }
+    protected bool justLanded = false; // Used to signal the Move() method to set y velocity to 0, to avoid clipping into the ground
+    public bool JustLanded { get { return justLanded; } set { justLanded = value; } }
     protected GameObject currentLeftWall;
     public bool IsTouchingWallOnLeft { get { return currentLeftWall != null; } }
     protected GameObject currentRightWall;
     public bool IsTouchingWallOnRight { get { return currentRightWall != null; } }
 
     // Used to store contacts when detecting a collision, as reusing the same array generates less work for c#'s garbage collector
-    protected ContactPoint2D[] collisionContacts;
+    protected ContactPoint2D[] collisionContactPoints;
 
     // Start is called before the first frame update.
     public void Start()
@@ -57,13 +60,20 @@ public abstract class AbstractController : MonoBehaviour, IMovable
         direction.x = direction.x * Time.fixedDeltaTime;
 
         // If no jump is to be performed, we should keep the rigidbody's original velocity
-        if(direction.y == 0)
+        if (direction.y == 0)
         {
             direction.y = rigidBody.velocity.y;
         }
 
         // Calculate fall multiplier
         direction = DetermineFallMultiplier(direction);
+
+        /*if (test)
+        {
+            Debug.Log("test was true, setting false");
+            test = false;
+            direction.y = 0;
+        }*/
 
         // Move by setting the rigidbody's velocity
         rigidBody.velocity = direction;
@@ -77,7 +87,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     /// <returns>a Vector2 object with the approrpiate multiplier applied.</returns>
     protected Vector2 DetermineFallMultiplier(Vector2 direction)
     {
-        if(applyFallMultiplier && direction.y < 0)
+        if(applyFallMultiplier && !IsGrounded && direction.y < 0)
         {
             // Add our fall multiplier minus one as unity already applied the multiplier one time
             direction.y += Physics2D.gravity.y * (fallMultiplier-1);  

@@ -5,22 +5,21 @@ using UnityEngine;
 public class PlayerController : AbstractController
 {
     // State info
-    private bool crowIsActive = true; // crow if true and cat if false.
+    private bool crowIsActive = true; // true for crow, false for cat
     private bool doublejumpAvailable;
-
-    // State variables to handle wall jumps
-    private int lastWalljumpCounter = 0;
-    private bool lastWalljumpDirection; // true for right, false for left
+    public bool IsDoublejumpAvailable { get { return doublejumpAvailable; } set { doublejumpAvailable = value; } }
 
     // The controls inputted by the player
     protected bool jump;
+    public bool Jump { get { return jump; } set { jump = value; } }
     protected float horizontalMovement;
+    public float HorizontalMovement { get { return horizontalMovement; } }
     private bool switchAnimal;
 
-    public bool Jump { get { return jump; } set { jump = value; } }
-    public float HorizontalMovement { get { return horizontalMovement; } }
-    public bool IsDoublejumpAvailable { get { return doublejumpAvailable; } set { doublejumpAvailable = value; } }
+    // State variables to handle wall jumps
+    private bool lastWalljumpDirection; // true for right, false for left
     public bool LastWalljumpDirection { get { return lastWalljumpDirection; } set { lastWalljumpDirection = value; } }
+    private int lastWalljumpCounter = 0;
     public int LastWalljumpCounter { get { return lastWalljumpCounter; } set { lastWalljumpCounter = value; } }
 
     // Wall jumping tweaks
@@ -45,7 +44,7 @@ public class PlayerController : AbstractController
         rigidBody = GetComponent<Rigidbody2D>();
         characterCollider = GetComponent<BoxCollider2D>();
         characterRenderer = GetComponent<SpriteRenderer>();
-        collisionContacts = new ContactPoint2D[2];
+        collisionContactPoints = new ContactPoint2D[2];
 
         // Custom stuff
         movementStrategy = new PlayerCrowMovementStrategy(this); // Default animal is crow
@@ -122,84 +121,73 @@ public class PlayerController : AbstractController
     }
 
     /// <summary>
-    /// From an array containing the contact points of a collision, determines if said collision grounded the player.
-    /// For this, it is assumed that the array contains two items, as the player uses a box collider and all terrain is a flat, non-sloped surface.
-    /// If the y value of both points is the same and the x values are different, then the collision must have happened on the ground.
+    /// Iterates through a Collision2D's list of ContactPoint2D objects, checking the normal of each point to determine what type of
+    /// terrain the character is touching.
+    /// Because we are using a box collider, the following logic is used:
+    ///     normal.x ==  1 -> ground collision
+    ///     normal.y ==  1 -> right wall collision
+    ///     normal.y == -1 -> left wall collisiojn
+    /// 
+    /// When a type of collision is determined, we store the game object collided against in the appropriate variable (currentGround, currentLeftWall or currentRightWall).
     /// </summary>
-    /// <param name="collisionPoints">a array containing the two contact points involved in a player-terrain collision.</param>
-    /// <returns>True if the collision occurred against the ground, false otherwise.</returns>
-    private bool IsCollisionGround(ContactPoint2D[] collisionPoints)
+    /// <param name="collision"></param>
+    void ParseTerrainCollisionContactPoints(Collision2D collision, out bool isGround, out bool isLeftWall, out bool isRightWall)
     {
-        return (collisionPoints[0].point.y == collisionPoints[1].point.y &&
-                collisionPoints[0].point.x != collisionPoints[1].point.x);
-    }
+        // Get the contact points from the collision object, store it in the collisionContactPoints array
+        int contactCount = collision.GetContacts(collisionContactPoints);
 
-    /// <summary>
-    /// From an array containing the contact points of a collision, determines if said collision was against a wall.
-    /// For this, it is assumed that the array contains two items, as the player uses a box collider and all terrain is a flat, non-sloped surface.
-    /// If the x value of both points is the same and the y values are different, then the collision must have happened on the ground.
-    /// Also, if the x value of the points is less than the player's center, it must be a left wall, and a right wall if it is greater.
-    /// </summary>
-    /// <param name="collisionPoints">a array containing the two contact points involved in a player-terrain collision.</param>
-    /// <returns>-1 if the collision was not againt a wall, 0 if it was a right wall, 1 if it was a left wall. </returns>
-    private int IsCollisionWall(ContactPoint2D[] collisionPoints)
-    {
-        if (collisionPoints[0].point.x == collisionPoints[1].point.x &&
-                collisionPoints[0].point.y != collisionPoints[1].point.y)
+        isGround = false;
+        isLeftWall = false; 
+        isRightWall = false;
+
+        // Parse the points to determine what type of terrain is being collided against
+        foreach (ContactPoint2D point in collisionContactPoints)
         {
-            // find the wall's direction
-            if (collisionPoints[0].point.x < characterCollider.bounds.center.x)
-            {
-                // left wall
-                return 1;
-            } else
-            {
-                // right wall
-                return 0;
-            }
-        } else
-        {
-            // not a wall collision
-            return -1;
+            // Check the point's normals to determine the type of collision
+            // Only overwrite each bool of it wasn't already true
+            isLeftWall = isLeftWall || point.normal.x == 1;
+            isRightWall = isRightWall || point.normal.x == -1;
+            isGround = isGround || point.normal.y == 1;
         }
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
+    /// <summary>
+    /// Called by Unity whenever a collision occurs.
+    /// If the collision is against terrain, we check whether it is ground or a wall and set the appropriate state variable to the game 
+    /// object the character collided against.
+    /// 
+    /// TODO enemy collisions.
+    /// </summary>
+    /// <param name="collision"></param>
+    private void OnCollisionEnter2D(Collision2D collision)
     {
         // Handle terrain collisions
         if (collision.gameObject.CompareTag("Terrain"))
         {
-            // Because we are using a box collider, we will always get two contacts
-            int contactCount = collision.GetContacts(collisionContacts);
-            if(contactCount != 2)
-            {
-                Debug.Log("A terrain collision with contacts != 2 occured. If you are seeing this printed in runtime, please tell Roberto he is stupid.");
-            }
+            ParseTerrainCollisionContactPoints(collision, out bool isGround, out bool isLeftWall, out bool isRightWall);
 
-            // Handle wall collisions
-            int isWall = IsCollisionWall(collisionContacts);
-            if(isWall == 0)
+            if (isLeftWall)
             {
-                // Wall is to the right
-                currentRightWall = collision.gameObject;
-                Debug.Log("Player is touching a wall on the right");
-
-            } else if(isWall == 1) {
-                // Wall is to the left
+                // Left wall
                 currentLeftWall = collision.gameObject;
                 Debug.Log("Player is touching a wall on the left");
+
             }
-            else
+            else if (isRightWall)
             {
-                // Handle non-wall terrain collisions
-                if (IsCollisionGround(collisionContacts))
-                {
-                    doublejumpAvailable = true;
-                    currentGround = collision.gameObject;
-                    Debug.Log("Player is grounded");
-                }
+                // Right wall
+                currentRightWall = collision.gameObject;
+                Debug.Log("Player is touching a wall on the right");
             }
-            // TODO edge cases if both points are the same (I have verified this can happen)
+
+            // Check y for ground
+            if (isGround)
+            {
+                justLanded = true;
+                doublejumpAvailable = true;
+                currentGround = collision.gameObject;
+                Debug.Log("Player is grounded");
+            }
 
         } else if (collision.gameObject.CompareTag("Enemy"))
         {
@@ -207,6 +195,12 @@ public class PlayerController : AbstractController
         }
     }
 
+    /// <summary>
+    /// Called by Unity whenever a collision ends.
+    /// If the collision is against terrain, we check whether it is ground or a wall and set the appropriate state variable to null.
+    /// 
+    /// </summary>
+    /// <param name="collision"></param>
     private void OnCollisionExit2D(Collision2D collision)
     {
 
@@ -234,4 +228,38 @@ public class PlayerController : AbstractController
         }
     }
 
+    /// <summary>
+    /// Called by Unity on all frames between the ones where a collision started and ened.
+    /// If the collision is against terrain, we check whether it is ground or a wall and set the appropriate state variable to the
+    /// object the character collided against.
+    /// 
+    /// </summary>
+    /// <param name="collision"></param>
+    void OnCollisionStay2D(Collision2D collision)
+    {
+            // Handle terrain collisions
+        if (collision.gameObject.CompareTag("Terrain"))
+        {
+            ParseTerrainCollisionContactPoints(collision, out bool isGround, out bool isLeftWall, out bool isRightWall);
+
+            if (isLeftWall)
+            {
+                // Left wall
+                currentLeftWall = collision.gameObject;
+
+            }
+            else if (isRightWall)
+            {
+                // Right wall
+                currentRightWall = collision.gameObject;
+            }
+            
+            if (isGround)
+            {
+                doublejumpAvailable = true;
+                currentGround = collision.gameObject;
+            }
+        }
+
+    }
 }
