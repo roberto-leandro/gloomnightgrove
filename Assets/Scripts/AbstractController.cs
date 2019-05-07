@@ -126,10 +126,10 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     /// </summary>
     private void FixedUpdate()
     {
+        AdditionalFixedUpdateOperations();
         Vector2 movementDirection = movementStrategy.DetermineMovement();
         Move(movementDirection);
         ManageFlip();
-        AdditionalFixedUpdateOperations();
     }
 
     /// <summary>

@@ -48,7 +48,7 @@ public class PlayerController : AbstractController
 
     // Wall jumping tweaks
     [SerializeField] private float wallJumpUpwardsForce;
-    public float WallJumpUpwardsForce { get { return wallJumpUpwardsForce; }  }
+    public float WallJumpUpwardsForce { get { return wallJumpUpwardsForce; } }
     [SerializeField] private float wallJumpSidewaysForce;
     public float WallJumpSidewaysForce { get { return wallJumpSidewaysForce; } }
     [SerializeField] private int walljumpMovementDuration;
@@ -57,7 +57,8 @@ public class PlayerController : AbstractController
     public float MoveInfluenceAfterWalljump { get { return moveInfluenceAfterWalljump; } }
 
     // Cache Unity objects that are used frequently to avoid getting them every time
-    protected Animator animator;
+    protected Animator anneAnimator;
+    [SerializeField] protected Animator clemmAnimator;
     protected Collider2D characterCollider;
     public Collider2D CharacterCollider { get { return characterCollider; } }
     [SerializeField]  protected Text healthText;
@@ -69,8 +70,9 @@ public class PlayerController : AbstractController
         base.Start();
 
         // Unity stuff
-        animator = GetComponent<Animator>();
         characterCollider = GetComponent<Collider2D>();
+        anneAnimator = GetComponent<Animator>();
+        clemmAnimator = transform.Find("Clemm").gameObject.GetComponent<Animator>();
 
         // Custom stuff
         movementStrategy = new PlayerCrowMovementStrategy(this); // Default animal is crow
@@ -147,7 +149,13 @@ public class PlayerController : AbstractController
         }
 
         // Set the parameters for our animation
-        animator.SetFloat("Speed", Mathf.Abs(rigidBody.velocity.x));
+        if(Jump)
+        {
+            Debug.Log("we jumpin girls");
+        }
+        anneAnimator.SetFloat("Speed", Mathf.Abs(rigidBody.velocity.x));
+        clemmAnimator.SetFloat("Speed", Mathf.Abs(rigidBody.velocity.x));
+        clemmAnimator.SetBool("Jump", Jump);
     }
 
     /// <summary>
