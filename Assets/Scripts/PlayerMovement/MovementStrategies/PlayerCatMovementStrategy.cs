@@ -7,7 +7,7 @@ public class PlayerCatMovementStrategy : AbstractPlayerMovementStrategy
 {
     public PlayerCatMovementStrategy(PlayerController controller) : base(controller) { }
 
-    public override Vector2 DetermineMovement()
+    protected override Vector2 DetermineVerticalMovement()
     {
         Vector2 direction = new Vector2();
 
@@ -28,13 +28,13 @@ public class PlayerCatMovementStrategy : AbstractPlayerMovementStrategy
                 // Add x movement away from the wall
                 if (characterController.IsTouchingWallOnLeft)
                 {
-                    characterController.LastWalljumpDirection = true; // true is right
+                    characterController.WallHitstunDirection = true; // true is right
                     direction.x = characterController.WallJumpSidewaysForce;
 
                 }
                 else if (characterController.IsTouchingWallOnRight)
                 {
-                    characterController.LastWalljumpDirection = false; // false is left
+                    characterController.WallHitstunDirection = false; // false is left
                     direction.x = characterController.WallJumpSidewaysForce * -1;
                 }
 
@@ -44,7 +44,8 @@ public class PlayerCatMovementStrategy : AbstractPlayerMovementStrategy
                 // Refund double jump for performing a double jump
                 characterController.IsDoublejumpAvailable = true;
 
-                characterController.LastWalljumpCounter = characterController.HinderedMovementAfterWalljumpDuration;
+                // Set this variable so the game knows that player wall jumped X frames ago and cotinues giving them a momentum away from the wall
+                characterController.WallHitstunCounter = characterController.WalljumpMovementDuration;
 
                 //Debug.Log("Player is jumping while not grounded and touching a wall");
             }
@@ -52,11 +53,6 @@ public class PlayerCatMovementStrategy : AbstractPlayerMovementStrategy
             // The jump was resolved, set to false
             characterController.Jump = false;
         }
-
-        //Debug.Log("fixedUpdatesSinceLastWallJump " + lastWalljumpCounter);
-
-        // Resolve horizontal movement
-        direction += base.DetermineHorizontalMovement();
 
         //Debug.Log("x velocity is "+direction.x);
         return direction;

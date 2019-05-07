@@ -11,7 +11,7 @@ public class PlayerCrowMovementStrategy : AbstractPlayerMovementStrategy
     /// Determine the movement for the player while in crow mode. In this mode the player has access to one double jump.
     /// </summary>
     /// <returns></returns>
-    public override Vector2 DetermineMovement()
+    protected override Vector2 DetermineVerticalMovement()
     {
         Vector2 direction = new Vector2();
 
@@ -35,9 +35,6 @@ public class PlayerCrowMovementStrategy : AbstractPlayerMovementStrategy
             // The jump was resolved, set to false
             characterController.Jump = false;
         }
-
-        // Handle horizontal movement
-        direction += base.DetermineHorizontalMovement();
 
         return direction;
     }

@@ -12,7 +12,10 @@ public class PlayerController : AbstractController
     private bool isCrowActive = true; // true for crow, false for cat
     private bool isDoublejumpAvailable;
     public bool IsDoublejumpAvailable { get { return isDoublejumpAvailable; } set { isDoublejumpAvailable = value; } }
-    private int healthPoints;
+    private Collision2D enemyCollision;
+    public bool CollidedWithEnemy { get { return enemyCollision != null; } set { if (!value) { enemyCollision = null; } } }
+    public Collision2D EnemyCollision { get { return enemyCollision; } }
+    [SerializeField] private int healthPoints;
 
     // The controls inputted by the player
     protected bool jump;
@@ -21,24 +24,42 @@ public class PlayerController : AbstractController
     public float HorizontalMovement { get { return horizontalMovement; } }
     private bool switchAnimal;
 
-    // State variables to handle wall jumps
-    private bool lastWalljumpDirection; // true for right, false for left
-    public bool LastWalljumpDirection { get { return lastWalljumpDirection; } set { lastWalljumpDirection = value; } }
-    private int lastWalljumpCounter = 0;
-    public int LastWalljumpCounter { get { return lastWalljumpCounter; } set { lastWalljumpCounter = value; } }
+    // State variables to wall jump hitstun
+    private bool wallHitstunDirection; // true for right, false for left
+    public bool WallHitstunDirection { get { return wallHitstunDirection; } set { wallHitstunDirection = value; } }
+    private int wallHitstunCounter = 0;
+    public int WallHitstunCounter { get { return wallHitstunCounter; } set { wallHitstunCounter = value; } }
+
+    // State variables to handle enemy hitstun
+    private bool enemyHitstunDirection; // true for right, false for left
+    public bool EnemyHitstunDirection { get { return enemyHitstunDirection; } set { enemyHitstunDirection = value; } }
+    private int enemyHitstunCounter = 0;
+    public int EnemyHitstunCounter { get { return enemyHitstunCounter; } set { enemyHitstunCounter = value; } }
+
+    // Enemy knockback tweaks
+    [SerializeField] private float enemyKnockbackUpwardsForce;
+    public float EnemyKnockbackUpwardsForce { get { return enemyKnockbackUpwardsForce; } }
+    [SerializeField] private float enemyKnockbackSidewaysForce;
+    public float EnemyKnockbackSidewaysForce { get { return enemyKnockbackSidewaysForce; } }
+    [SerializeField] private int enemyHitstunDuration;
+    public int EnemyHitstunDuration { get { return enemyHitstunDuration; } }
+    [SerializeField] private float moveInfluenceAfterEnemyKnockback;
+    public float MoveInfluenceAfterEnemyKnockback { get { return moveInfluenceAfterEnemyKnockback; } }
 
     // Wall jumping tweaks
     [SerializeField] private float wallJumpUpwardsForce;
     public float WallJumpUpwardsForce { get { return wallJumpUpwardsForce; }  }
     [SerializeField] private float wallJumpSidewaysForce;
     public float WallJumpSidewaysForce { get { return wallJumpSidewaysForce; } }
-    [SerializeField] private int walljumpMovementDuration = 25;
-    public int HinderedMovementAfterWalljumpDuration { get { return walljumpMovementDuration; } }
-    [SerializeField] private float moveInfluenceAfterWalljump = 0.25f;
+    [SerializeField] private int walljumpMovementDuration;
+    public int WalljumpMovementDuration { get { return walljumpMovementDuration; } }
+    [SerializeField] private float moveInfluenceAfterWalljump;
     public float MoveInfluenceAfterWalljump { get { return moveInfluenceAfterWalljump; } }
 
     // Cache Unity objects that are used frequently to avoid getting them every time
     protected Animator animator;
+    protected Collider2D characterCollider;
+    public Collider2D CharacterCollider { get { return characterCollider; } }
     [SerializeField]  protected Text healthText;
 
     // Start is called before the first frame update.
@@ -49,13 +70,11 @@ public class PlayerController : AbstractController
 
         // Unity stuff
         animator = GetComponent<Animator>();
-        
+        characterCollider = GetComponent<Collider2D>();
 
         // Custom stuff
         movementStrategy = new PlayerCrowMovementStrategy(this); // Default animal is crow
-        healthPoints = 3;
         UpdateHealthText();
-        
     }
 
     // Update is called once per frame
@@ -150,7 +169,7 @@ public class PlayerController : AbstractController
         if(healthPoints > 0)
         {
             UpdateHealthText();
-            // TODO handle knockback
+            enemyCollision = collision;
         }
         else
         {

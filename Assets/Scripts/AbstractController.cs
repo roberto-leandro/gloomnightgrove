@@ -8,13 +8,15 @@ public abstract class AbstractController : MonoBehaviour, IMovable
 
     // Cache unity's rigidbody object so we don't need to get it every time
     protected Rigidbody2D rigidBody;
+    public float XVelocity { get { return rigidBody.velocity.x; } }
+    public float YVelocity { get { return rigidBody.velocity.y; } }
     protected SpriteRenderer spriteRenderer;
 
     // A strategy that will define how each concrete controller moves the character
     public IMovementStrategy movementStrategy;
 
     // How fast the character moves
-    [SerializeField] protected float movementSpeed = 200;
+    [SerializeField] protected float movementSpeed;
     public float MovementSpeed { get { return movementSpeed; } }
 
     // How high the character jumps
@@ -41,6 +43,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
 
     // Used to store contacts when detecting a collision, as reusing the same array generates less work for c#'s garbage collector
     protected ContactPoint2D[] collisionContactPoints;
+    public ContactPoint2D[] CollisionContactPoints { get { return collisionContactPoints; } }
 
     // Start is called before the first frame update.
     public virtual void Start()
