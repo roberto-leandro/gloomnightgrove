@@ -51,7 +51,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
         // Initialize variables that will be used later on.
         rigidBody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        collisionContactPoints = new ContactPoint2D[2];
+        collisionContactPoints = new ContactPoint2D[4];
     }
 
     /// <summary>
