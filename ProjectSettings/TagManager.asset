@@ -15,28 +15,28 @@ TagManager:
   - UI
   - 
   - 
+  - Background
+  - 
+  - 
+  - 
+  - Enemies
   - 
   - 
   - 
   - 
+  - Player
   - 
   - 
   - 
+  - Animals
   - 
   - 
   - 
+  - Tiles
   - 
   - 
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Foreground
   - 
   - 
   m_SortingLayers:

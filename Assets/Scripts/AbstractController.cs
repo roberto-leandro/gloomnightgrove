@@ -166,6 +166,8 @@ public abstract class AbstractController : MonoBehaviour, IMovable
             isLeftWall = isLeftWall || point.normal.x == 1;
             isRightWall = isRightWall || point.normal.x == -1;
             isGround = isGround || point.normal.y == 1;
+
+            Debug.Log(point.normal.y);
         }
     }
 
@@ -216,7 +218,9 @@ public abstract class AbstractController : MonoBehaviour, IMovable
         // Handle terrain collisions
         if (collision.gameObject.CompareTag("Terrain"))
         {
+            Debug.Log("gonna parse");
             ParseTerrainCollisionContactPoints(collision, out bool isGround, out bool isLeftWall, out bool isRightWall);
+            Debug.Log("ground?" + isGround);
 
             if (isLeftWall)
             {
@@ -239,10 +243,6 @@ public abstract class AbstractController : MonoBehaviour, IMovable
             if (isGround)
             {
                 OnGroundCollisionStay(collision);
-            }
-            else if (IsGrounded && currentGround == collision.gameObject)
-            {
-                currentGround = null;
             }
         }
     }

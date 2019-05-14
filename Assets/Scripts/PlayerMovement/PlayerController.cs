@@ -9,7 +9,7 @@ using UnityEngine.UI;
 public class PlayerController : AbstractController
 {
     // State info
-    private bool isCrowActive = true; // true for crow, false for cat
+    private bool isCrowActive; // true for crow, false for cat
     private bool isDoublejumpAvailable;
     public bool IsDoublejumpAvailable { get { return isDoublejumpAvailable; } set { isDoublejumpAvailable = value; } }
     private Collision2D enemyCollision;
@@ -58,7 +58,9 @@ public class PlayerController : AbstractController
 
     // Cache Unity objects that are used frequently to avoid getting them every time
     protected Animator anneAnimator;
-    [SerializeField] protected Animator clemmAnimator;
+    [SerializeField] protected GameObject clemmObject;
+    [SerializeField] protected GameObject ultharObject;
+    [SerializeField] protected Animator currentAnimator;
     protected Collider2D characterCollider;
     public Collider2D CharacterCollider { get { return characterCollider; } }
     [SerializeField]  protected Text healthText;
@@ -72,7 +74,13 @@ public class PlayerController : AbstractController
         // Unity stuff
         characterCollider = GetComponent<Collider2D>();
         anneAnimator = GetComponent<Animator>();
-        clemmAnimator = transform.Find("Clemm").gameObject.GetComponent<Animator>();
+        ultharObject = transform.Find("Ulthar").gameObject;
+        clemmObject = transform.Find("Clemm").gameObject;
+        
+        // Clemm is the default animal
+        isCrowActive = true;
+        ultharObject.SetActive(false);
+        currentAnimator = clemmObject.GetComponent<Animator>();
 
         // Custom stuff
         movementStrategy = new PlayerCrowMovementStrategy(this); // Default animal is crow
@@ -120,19 +128,23 @@ public class PlayerController : AbstractController
     void SwitchAnimal()
     {
         //TODO code to change sprite
-        // Change movement strategy and sprite, according to the currently active animal.
+        // Change movement strategy and set the current animator, according to the currently active animal.
         if (isCrowActive)
         {
             movementStrategy = new PlayerCatMovementStrategy(this);
-            spriteRenderer.color = new Color32(255, 175, 255, 255);
+            currentAnimator = ultharObject.GetComponent<Animator>();
             Debug.Log("Cat selected");
         } else
         {
             movementStrategy = new PlayerCrowMovementStrategy(this);
-            spriteRenderer.color = Color.black;
+            currentAnimator = clemmObject.GetComponent<Animator>();
             Debug.Log("Crow selected");
         }
-        
+
+        // Change the active game object and current animator
+        ultharObject.SetActive(isCrowActive);
+        clemmObject.SetActive(!isCrowActive);
+
         // Flip the currently active animal boolean.
         isCrowActive = !isCrowActive;
     }
@@ -154,8 +166,8 @@ public class PlayerController : AbstractController
             Debug.Log("we jumpin girls");
         }
         anneAnimator.SetFloat("Speed", Mathf.Abs(rigidBody.velocity.x));
-        clemmAnimator.SetFloat("Speed", Mathf.Abs(rigidBody.velocity.x));
-        clemmAnimator.SetBool("Jump", Jump);
+        currentAnimator.SetFloat("Speed", Mathf.Abs(rigidBody.velocity.x));
+        currentAnimator.SetBool("Jump", Jump);
     }
 
     /// <summary>
@@ -167,6 +179,18 @@ public class PlayerController : AbstractController
         base.OnGroundCollisionEnter(collision);
         isDoublejumpAvailable = true;
     }
+
+    /// <summary>
+    /// We override the abstract controller's way of handling a ground collision so we can refund the player's double jump.
+    /// </summary>
+    /// <param name="collision"></param>
+    protected override void OnGroundCollisionStay(Collision2D collision)
+    {
+        base.OnGroundCollisionEnter(collision);
+        Debug.Log("we in here");
+        isDoublejumpAvailable = true;
+    }
+
 
     /// <summary>
     /// Take damage and move the player away from the enemy.
