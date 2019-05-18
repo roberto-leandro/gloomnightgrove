@@ -161,10 +161,6 @@ public class PlayerController : AbstractController
         }
 
         // Set the parameters for our animation
-        if(Jump)
-        {
-            Debug.Log("we jumpin girls");
-        }
         anneAnimator.SetFloat("Speed", Mathf.Abs(rigidBody.velocity.x));
         currentAnimator.SetFloat("Speed", Mathf.Abs(rigidBody.velocity.x));
         currentAnimator.SetBool("Jump", Jump);
@@ -177,6 +173,7 @@ public class PlayerController : AbstractController
     protected override void OnGroundCollisionEnter(Collision2D collision)
     {
         base.OnGroundCollisionEnter(collision);
+        Debug.Log("just got grounded on enter");
         isDoublejumpAvailable = true;
     }
 
@@ -187,7 +184,7 @@ public class PlayerController : AbstractController
     protected override void OnGroundCollisionStay(Collision2D collision)
     {
         base.OnGroundCollisionEnter(collision);
-        Debug.Log("we in here");
+        Debug.Log("just got grounded on stay");
         isDoublejumpAvailable = true;
     }
 

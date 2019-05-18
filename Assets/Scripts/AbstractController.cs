@@ -31,7 +31,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
 
     // State variables common to most characters
     // Current walls and ground are stored to be able to handle them properly on collision exits
-    protected GameObject currentGround;
+    [SerializeField] protected GameObject currentGround;
     public bool IsGrounded { get { return currentGround != null; } }
     protected GameObject currentLeftWall;
     public bool IsTouchingWallOnLeft { get { return currentLeftWall != null; } }
@@ -166,8 +166,6 @@ public abstract class AbstractController : MonoBehaviour, IMovable
             isLeftWall = isLeftWall || point.normal.x == 1;
             isRightWall = isRightWall || point.normal.x == -1;
             isGround = isGround || point.normal.y == 1;
-
-            Debug.Log(point.normal.y);
         }
     }
 
@@ -218,9 +216,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
         // Handle terrain collisions
         if (collision.gameObject.CompareTag("Terrain"))
         {
-            Debug.Log("gonna parse");
             ParseTerrainCollisionContactPoints(collision, out bool isGround, out bool isLeftWall, out bool isRightWall);
-            Debug.Log("ground?" + isGround);
 
             if (isLeftWall)
             {
@@ -301,6 +297,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     protected virtual void OnRightWallCollisionStay(Collision2D collision)
     {
         currentRightWall = collision.gameObject;
+        Debug.Log("Player is touching a wall on the right STAY");
     }
 
     protected virtual void OnLeftWallCollisionEnter(Collision2D collision)
