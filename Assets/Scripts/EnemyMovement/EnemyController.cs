@@ -8,14 +8,15 @@ using UnityEngine;
 /// </summary>
 public class EnemyController : AbstractController
 {
-    [SerializeField] EnemyMovementStrategy movementType = EnemyMovementStrategy.BackAndForth;
+    [SerializeField] EnemyMovementStrategy movementType = EnemyMovementStrategy.NoMovement;
+    [SerializeField] Animator animator;
 
     // Start is called before the first frame update
     public override void Start()
 	{
         // Call parent to initialize all the necessary stuff
         base.Start();
-
+        
         switch(movementType)
         {
             case EnemyMovementStrategy.BackAndForth:
@@ -35,8 +36,8 @@ public class EnemyController : AbstractController
 	// Update is called once per frame
 	void Update()
 	{
-		
-	}
+        animator.SetFloat("Speed", Mathf.Abs(rigidBody.velocity.x));
+    }
     
 }
 

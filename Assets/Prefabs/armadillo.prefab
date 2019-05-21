@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3540734538605386047}
   - component: {fileID: 3540734538605386046}
   m_Layer: 0
-  m_Name: armadillo_idle
+  m_Name: armadillo
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -135,4 +135,6 @@ MonoBehaviour:
   jumpForce: 0
   fallMultiplier: 1
   applyFallMultiplier: 0
+  currentGround: {fileID: 0}
   movementType: 0
+  animator: {fileID: 0}
