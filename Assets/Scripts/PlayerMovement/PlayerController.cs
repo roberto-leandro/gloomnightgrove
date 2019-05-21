@@ -209,6 +209,6 @@ public class PlayerController : AbstractController
 
     private void UpdateHealthText() 
     {
-        healthText.text = "Health: " + healthPoints.ToString();
+       // healthText.text = "Health: " + healthPoints.ToString();
     }
 }

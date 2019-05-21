@@ -159,8 +159,11 @@ public abstract class AbstractController : MonoBehaviour, IMovable
         isRightWall = false;
 
         // Parse the points to determine what type of terrain is being collided against
-        foreach (ContactPoint2D point in collisionContactPoints)
+        // The array collisionContactPoints could have points from previous collisions
+        // Only read as many points as were returned by Unity, given in the int contactCount
+        for (int i = 0; i < contactCount; i++)
         {
+            ContactPoint2D point = collisionContactPoints[i];
             // Check the point's normals to determine the type of collision
             // Only overwrite each bool of it wasn't already true
             isLeftWall = isLeftWall || point.normal.x == 1;
