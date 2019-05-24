@@ -33,9 +33,9 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     // Current walls and ground are stored to be able to handle them properly on collision exits
     [SerializeField] protected GameObject currentGround;
     public bool IsGrounded { get { return currentGround != null; } }
-    protected GameObject currentLeftWall;
+    [SerializeField] protected GameObject currentLeftWall;
     public bool IsTouchingWallOnLeft { get { return currentLeftWall != null; } }
-    protected GameObject currentRightWall;
+    [SerializeField] protected GameObject currentRightWall;
     public bool IsTouchingWallOnRight { get { return currentRightWall != null; } }
 
     protected bool isFacingRight = true;
@@ -170,6 +170,8 @@ public abstract class AbstractController : MonoBehaviour, IMovable
             isRightWall = isRightWall || point.normal.x == -1;
             isGround = isGround || point.normal.y == 1;
         }
+
+        //Debug.Log("isGround: " + isGround + ", isLeftWall: " + isLeftWall + ", isRightWall: "+ isRightWall);
     }
 
     /// <summary>
@@ -221,6 +223,11 @@ public abstract class AbstractController : MonoBehaviour, IMovable
         {
             ParseTerrainCollisionContactPoints(collision, out bool isGround, out bool isLeftWall, out bool isRightWall);
 
+            //Debug.Log("again isGround: " + isGround + ", isLeftWall: " + isLeftWall + ", isRightWall: " + isRightWall);
+
+            // On each case we manage the cases of the character touching AND not touching the terrain
+            // This is because the entire tilemap is only one collider, so the player could of example jump while touching a wall, which would not trigger
+            // OnCollisionExit2D, so the ground would not be unset.
             if (isLeftWall)
             {
                 OnLeftWallCollisionStay(collision);
@@ -242,6 +249,9 @@ public abstract class AbstractController : MonoBehaviour, IMovable
             if (isGround)
             {
                 OnGroundCollisionStay(collision);
+            } else if (IsGrounded && currentGround == collision.gameObject)
+            {
+                currentGround = null;
             }
         }
     }
@@ -261,19 +271,19 @@ public abstract class AbstractController : MonoBehaviour, IMovable
             {
                 // Collision was ground
                 currentGround = null;
-                Debug.Log("Player is NOT grounded");
+                Debug.Log("Player is NOT grounded lolol");
             }
             else if (collision.gameObject == currentLeftWall)
             {
                 // Collision was a left wall
                 currentLeftWall = null;
-                Debug.Log("Player is NOT touching a wall on the left");
+                //Debug.Log("Player is NOT touching a wall on the left");
             }
             else if (collision.gameObject == currentRightWall)
             {
                 // Collision was a right wall
                 currentRightWall = null;
-                Debug.Log("Player is NOT touching a wall on the right");
+                //Debug.Log("Player is NOT touching a wall on the right");
             }
         }
     }
@@ -281,7 +291,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     protected virtual void OnGroundCollisionEnter(Collision2D collision)
     {
         currentGround = collision.gameObject;
-        Debug.Log("Player is grounded");
+        //Debug.Log("Player is grounded");
     }
 
     protected virtual void OnEnemyCollisionEnter(Collision2D collision){}
@@ -294,19 +304,19 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     protected virtual void OnRightWallCollisionEnter(Collision2D collision)
     {
         currentRightWall = collision.gameObject;
-        Debug.Log("Player is touching a wall on the right");
+        //Debug.Log("Player is touching a wall on the right");
     }
 
     protected virtual void OnRightWallCollisionStay(Collision2D collision)
     {
         currentRightWall = collision.gameObject;
-        Debug.Log("Player is touching a wall on the right STAY");
+        //Debug.Log("Player is touching a wall on the right STAY");
     }
 
     protected virtual void OnLeftWallCollisionEnter(Collision2D collision)
     {
         currentLeftWall = collision.gameObject;
-        Debug.Log("Player is touching a wall on the left");
+        //Debug.Log("Player is touching a wall on the left");
     }
 
     protected virtual void OnLeftWallCollisionStay(Collision2D collision)

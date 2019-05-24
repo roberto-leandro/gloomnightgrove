@@ -133,12 +133,12 @@ public class PlayerController : AbstractController
         {
             movementStrategy = new PlayerCatMovementStrategy(this);
             currentAnimator = ultharObject.GetComponent<Animator>();
-            Debug.Log("Cat selected");
+            //Debug.Log("Cat selected");
         } else
         {
             movementStrategy = new PlayerCrowMovementStrategy(this);
             currentAnimator = clemmObject.GetComponent<Animator>();
-            Debug.Log("Crow selected");
+            //Debug.Log("Crow selected");
         }
 
         // Change the active game object and current animator
@@ -173,7 +173,7 @@ public class PlayerController : AbstractController
     protected override void OnGroundCollisionEnter(Collision2D collision)
     {
         base.OnGroundCollisionEnter(collision);
-        Debug.Log("just got grounded on enter");
+        //Debug.Log("just got grounded on enter");
         isDoublejumpAvailable = true;
     }
 
@@ -184,7 +184,7 @@ public class PlayerController : AbstractController
     protected override void OnGroundCollisionStay(Collision2D collision)
     {
         base.OnGroundCollisionEnter(collision);
-        Debug.Log("just got grounded on stay");
+        //Debug.Log("just got grounded on stay");
         isDoublejumpAvailable = true;
     }
 
