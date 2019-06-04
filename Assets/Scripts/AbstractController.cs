@@ -208,6 +208,10 @@ public abstract class AbstractController : MonoBehaviour, IMovable
         {
             OnEnemyCollisionEnter(collision);
         }
+        else if (collision.gameObject.CompareTag("Finish"))
+        {
+            OnFinishCollisionEnter(collision);
+        }
     }
     
     /// <summary>
@@ -300,6 +304,8 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     {
         currentGround = collision.gameObject;
     }
+
+    protected virtual void OnFinishCollisionEnter(Collision2D collision){}
 
     protected virtual void OnRightWallCollisionEnter(Collision2D collision)
     {

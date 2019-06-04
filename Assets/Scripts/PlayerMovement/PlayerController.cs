@@ -1,14 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using TMPro;
 
 /// <summary>
 /// Defines the player's movements mechanics, including character switching, jumping, wall jumping, and all the button input reading necessary.
 /// </summary>
 public class PlayerController : AbstractController
 {
-    // State info
+    // State info 
     private bool isCrowActive; // true for crow, false for cat
     private bool isDoublejumpAvailable;
     public bool IsDoublejumpAvailable { get { return isDoublejumpAvailable; } set { isDoublejumpAvailable = value; } }
@@ -63,7 +64,8 @@ public class PlayerController : AbstractController
     [SerializeField] protected Animator currentAnimator;
     protected Collider2D characterCollider;
     public Collider2D CharacterCollider { get { return characterCollider; } }
-    [SerializeField]  protected Text healthText;
+    [SerializeField] protected TextMeshProUGUI healthText;
+    [SerializeField] protected Transform spawnPoint;
 
     // Start is called before the first frame update.
     public override void Start()
@@ -202,13 +204,29 @@ public class PlayerController : AbstractController
         }
         else
         {
-            // TODO handle DEATH
-            healthText.text = "u died ):";
+            Respawn();
         }
     }
 
+    protected override void OnFinishCollisionEnter(Collision2D collision)
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    /// <summary>
+    /// Go to main menu.
+    /// </summary>
     private void UpdateHealthText() 
     {
-       // healthText.text = "Health: " + healthPoints.ToString();
+       healthText.SetText("Health: " + healthPoints.ToString());
     }
+
+    private void Respawn()
+    {
+        rigidBody.position = spawnPoint.position;
+        rigidBody.velocity = new Vector2();
+        healthPoints = 3;
+        UpdateHealthText();
+    }
+
 }
