@@ -5,13 +5,8 @@ using UnityEngine;
 
 public class MainMenu : MonoBehaviour
 {
-    public void StartLevel1()
+    public void StartLevelByName(string levelName)
     {
-        SceneManager.LoadScene("Level1");
-    }
-
-    public void StartBossFight()
-    {
-        SceneManager.LoadScene("BossFight");
+        SceneManager.LoadScene(levelName);
     }
 }
