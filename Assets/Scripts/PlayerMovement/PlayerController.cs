@@ -28,7 +28,7 @@ public class PlayerController : AbstractController
     public float HorizontalMovement { get { return horizontalMovement; } }
     private bool switchAnimal;
 
-    // State variables to wall jump hitstun
+    // State variables to handle wall jump hitstun
     private bool wallHitstunDirection; // true for right, false for left
     public bool WallHitstunDirection { get { return wallHitstunDirection; } set { wallHitstunDirection = value; } }
     private int wallHitstunCounter = 0;
@@ -62,14 +62,14 @@ public class PlayerController : AbstractController
 
     // Cache Unity objects that are used frequently to avoid getting them every time
     protected Animator anneAnimator;
-    [SerializeField] protected GameObject clemmObject;
-    [SerializeField] protected GameObject ultharObject;
-    [SerializeField] protected Animator currentAnimator;
+    protected GameObject clemmObject;
+    protected GameObject ultharObject;
+    protected Animator currentAnimator;
     protected Collider2D characterCollider;
     public Collider2D CharacterCollider { get { return characterCollider; } }
     [SerializeField] protected TextMeshProUGUI healthText;
     [SerializeField] protected Transform spawnPoint;
-    private Renderer renderer;
+    private Renderer characterRenderer;
 
     // Start is called before the first frame update.
     public override void Start()
@@ -82,7 +82,7 @@ public class PlayerController : AbstractController
         anneAnimator = GetComponent<Animator>();
         ultharObject = transform.Find("Ulthar").gameObject;
         clemmObject = transform.Find("Clemm").gameObject;
-        renderer = GetComponent<Renderer>();
+        characterRenderer = GetComponent<Renderer>();
         
         // Clemm is the default animal
         isCrowActive = true;
@@ -212,7 +212,7 @@ public class PlayerController : AbstractController
                 UpdateHealthText();
                 enemyCollision = collision;
                 StartCoroutine(Blink());
-                StartCoroutine(invincibilityFrames());
+                StartCoroutine(InvincibilityFrames());
             }
             else
             {
@@ -223,7 +223,7 @@ public class PlayerController : AbstractController
 
     }
 
-    protected IEnumerator invincibilityFrames()
+    protected IEnumerator InvincibilityFrames()
     {
         this.invincible = true;
         yield return new WaitForSeconds(this.invincibilityDuration);
@@ -236,9 +236,9 @@ public class PlayerController : AbstractController
 
         while(Time.time < endTime)
         {
-            renderer.enabled = false;
+            characterRenderer.enabled = false;
             yield return new WaitForSeconds(this.blinkDuration);
-            renderer.enabled = true;
+            characterRenderer.enabled = true;
             yield return new WaitForSeconds(this.blinkDuration);
         }
     }

@@ -1,25 +1,33 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class KromavController : EnemyController
 {
-
-    bool biteAnimationStarted = false;
-
-    // The controls inputted by the player
+    // State variables controlled with markov chains
     protected bool bite;
+    public bool Bite { get { return bite; } set { bite = value; } }
 
-    // Animation states
-    protected bool isBiting;
-    protected bool startedBiting;
+    protected bool spikes;
+    public bool Spikes { get { return spikes; } set { spikes = value; } }
 
     protected bool jump;
     public bool Jump { get { return jump; } set { jump = value; } }
 
+    [SerializeField] protected bool walkingToPlayer;
+    public bool WalkingToPlayer { get { return walkingToPlayer; } set { walkingToPlayer = value; } }
+
+    // Used to start new moves
+    [SerializeField] protected bool isIdle;
+    public bool IsIdle { get { return isIdle; } set { isIdle = value; } }
+
+    // Determines how long kromav walks towards the player
+    [SerializeField] private float walkToPlayerDuration;
+    public float WalkToPlayerDuration { get { return walkToPlayerDuration; }  }
+
     // Attack hitboxes
     [SerializeField] protected Collider2D biteCollider;
-    [SerializeField] protected List<Collider2D> spikeColliders;
+    [SerializeField] protected Collider2D[] smallSpikeColliders;
+    [SerializeField] protected Collider2D[] bigSpikeColliders;
 
     public override void Start()
     {
@@ -41,34 +49,29 @@ public class KromavController : EnemyController
                 break;
         }
 
+        // The kromav sprite is looking the opposite way :P
+        isFacingRight = !IsFacingRight;
+
         // Disable all attack hitboxes
         biteCollider.enabled = false;
+        DisableSmallSpikeHitBox();
+        DisableBigSpikeHitBox();
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        // Read player input each update 
-        ReadPlayerInput();
-    } 
 
     /// <summary>
     /// Reads player input and sets the appropriate info for the movement startegy to use.
     /// </summary>
-    private void ReadPlayerInput()
+    public void WalkToPlayer()
     {
+        StartCoroutine(WalkTowardsPlayerCoroutine());
+    }
 
-        // Determine if player wants to jump
-        // We only want to change jump if it is already false, changing its value when its true can result in missed inputs
-        if (!jump)
-        {
-            jump = Input.GetButtonDown("Jump");
-        }
-
-        if (!bite)
-        {
-            bite = Input.GetButtonDown("SwitchAnimal");
-        }
+    protected IEnumerator WalkTowardsPlayerCoroutine()
+    {
+        walkingToPlayer = true;
+        yield return new WaitForSeconds(WalkToPlayerDuration);
+        walkingToPlayer = false;
+        Debug.Log("stahp");
     }
 
     /// <summary>
@@ -77,32 +80,80 @@ public class KromavController : EnemyController
     protected override void AdditionalFixedUpdateOperations()
     {
         // Set the parameters for our animation
-        animator.SetFloat("HorizontalSpeed", Mathf.Abs(rigidBody.velocity.x));
+        animator.SetFloat("Speed", Mathf.Abs(rigidBody.velocity.x));
         animator.SetFloat("VerticalSpeed", rigidBody.velocity.y);
         animator.SetBool("Jump", jump);
+
         animator.SetBool("Bite", bite);
+        bite = false;
+        
+        animator.SetBool("Spikes", spikes);
+        spikes = false;
+    }
 
+    private void EnableBiteHitbox()
+    {
+        biteCollider.enabled = true;
+    }
 
-        if(bite || startedBiting)
+    private void DisableBiteHitbox()
+    {
+        biteCollider.enabled = false;
+    }
+
+    private void EnableBigSpikeHitBox()
+    {
+        for (int i = 0; i < bigSpikeColliders.Length; i++)
         {
-            BiteAttack();
+            bigSpikeColliders[i].enabled = true;
         }
     }
 
-    private void BiteAttack()
+    private void DisableBigSpikeHitBox()
     {
+        for (int i = 0; i < bigSpikeColliders.Length; i++)
+        {
+            bigSpikeColliders[i].enabled = false;
+        }
+    }
+    private void EnableSmallSpikeHitBox()
+    {
+        for (int i = 0; i < smallSpikeColliders.Length; i++)
+        {
+            smallSpikeColliders[i].enabled = true;
+        }
+    }
+
+    private void DisableSmallSpikeHitBox()
+    {
+        for (int i = 0; i < smallSpikeColliders.Length; i++)
+        {
+            smallSpikeColliders[i].enabled = false;
+        }
+    }
+
+    private void SetIdle()
+    {
+        Debug.Log("set idle true");
+        isIdle = true;
+    }
+
+    private void SetJumpFalse()
+    {
+        Debug.Log("set jump false");
+        jump = false;
+    }
+
+    private void SetBiteFalse()
+    {
+        Debug.Log("set bite false");
         bite = false;
-        startedBiting = true;
-        if (animator.GetCurrentAnimatorStateInfo(0).IsName("kromav_bite"))
-        {
-            isBiting = true;
-            biteCollider.enabled = true;
-        }
-        else if (isBiting)
-        {
-            biteCollider.enabled = false;
-            isBiting = false;
-            startedBiting = false;
-        }
+    }
+
+    private void SetSpikesFalse()
+    {
+        Debug.Log("set spikes false");
+        spikes = false;
     }
 }
+

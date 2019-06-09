@@ -275,7 +275,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
             {
                 // Collision was ground
                 currentGround = null;
-                Debug.Log("Player is NOT grounded lolol");
+                //Debug.Log("Player is NOT grounded lolol");
             }
             else if (collision.gameObject == currentLeftWall)
             {

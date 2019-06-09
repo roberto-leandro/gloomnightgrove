@@ -67,18 +67,18 @@ public abstract class AbstractPlayerMovementStrategy : AbstractMovementStrategy<
             // Substract one from hitstun counter
             characterController.EnemyHitstunCounter--;
 
-            // Keep moving player away from the enemy
-            if (characterController.EnemyHitstunDirection)
-            {
-                direction.x = characterController.EnemyKnockbackSidewaysForce;
-            }
-            else
-            {
-                direction.x = characterController.EnemyKnockbackSidewaysForce * -1;
-            }
+        // Keep moving player away from the enemy
+        if (characterController.EnemyHitstunDirection)
+        {
+            direction.x = characterController.EnemyKnockbackSidewaysForce;
+        }
+        else
+        {
+            direction.x = characterController.EnemyKnockbackSidewaysForce * -1;
+        }
 
-            // Add player input, taking into account how much they can influece their direction after a walljump
-            direction.x += characterController.HorizontalMovement * characterController.MoveInfluenceAfterEnemyKnockback;
+        // Add player input, taking into account how much they can influece their direction after a walljump
+        direction.x += characterController.HorizontalMovement * characterController.MoveInfluenceAfterEnemyKnockback;
         }
         else if (characterController.WallHitstunCounter > 0)
         {

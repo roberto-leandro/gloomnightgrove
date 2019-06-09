@@ -10,6 +10,7 @@ public class EnemyController : AbstractController
 {
     [SerializeField] protected EnemyMovementStrategy movementType = EnemyMovementStrategy.NoMovement;
     [SerializeField] protected Animator animator;
+    public Animator Animator { get { return animator; } }
 
     // Start is called before the first frame update
     public override void Start()
