@@ -4,8 +4,15 @@ using UnityEngine;
 
 public class KromavController : EnemyController
 {
+
+    bool biteAnimationStarted = false;
+
     // The controls inputted by the player
     protected bool bite;
+
+    // Animation states
+    protected bool isBiting;
+    protected bool startedBiting;
 
     protected bool jump;
     public bool Jump { get { return jump; } set { jump = value; } }
@@ -75,7 +82,8 @@ public class KromavController : EnemyController
         animator.SetBool("Jump", jump);
         animator.SetBool("Bite", bite);
 
-        if(bite)
+
+        if(bite || startedBiting)
         {
             BiteAttack();
         }
@@ -83,8 +91,18 @@ public class KromavController : EnemyController
 
     private void BiteAttack()
     {
-        biteCollider.enabled = true;
-
         bite = false;
+        startedBiting = true;
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("kromav_bite"))
+        {
+            isBiting = true;
+            biteCollider.enabled = true;
+        }
+        else if (isBiting)
+        {
+            biteCollider.enabled = false;
+            isBiting = false;
+            startedBiting = false;
+        }
     }
 }
