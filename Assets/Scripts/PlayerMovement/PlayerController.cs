@@ -17,6 +17,9 @@ public class PlayerController : AbstractController
     public bool CollidedWithEnemy { get { return enemyCollision != null; } set { if (!value) { enemyCollision = null; } } }
     public Collision2D EnemyCollision { get { return enemyCollision; } }
     [SerializeField] private int healthPoints;
+    private bool invincible;
+    [SerializeField] private int invincibilityDuration;
+    [SerializeField] private float blinkDuration;
 
     // The controls inputted by the player
     protected bool jump;
@@ -66,6 +69,7 @@ public class PlayerController : AbstractController
     public Collider2D CharacterCollider { get { return characterCollider; } }
     [SerializeField] protected TextMeshProUGUI healthText;
     [SerializeField] protected Transform spawnPoint;
+    private Renderer renderer;
 
     // Start is called before the first frame update.
     public override void Start()
@@ -78,6 +82,7 @@ public class PlayerController : AbstractController
         anneAnimator = GetComponent<Animator>();
         ultharObject = transform.Find("Ulthar").gameObject;
         clemmObject = transform.Find("Clemm").gameObject;
+        renderer = GetComponent<Renderer>();
         
         // Clemm is the default animal
         isCrowActive = true;
@@ -87,6 +92,9 @@ public class PlayerController : AbstractController
         // Custom stuff
         movementStrategy = new PlayerCrowMovementStrategy(this); // Default animal is crow
         UpdateHealthText();
+
+        // Setup for invincibility frames
+        invincible = false;
     }
 
     // Update is called once per frame
@@ -196,15 +204,42 @@ public class PlayerController : AbstractController
     /// </summary>
     protected override void OnEnemyCollisionEnter(Collision2D collision)
     {
-        healthPoints = healthPoints - 1;
-        if(healthPoints > 0)
+        if (!invincible)
         {
-            UpdateHealthText();
-            enemyCollision = collision;
+            healthPoints = healthPoints - 1;
+            if (healthPoints > 0)
+            {
+                UpdateHealthText();
+                enemyCollision = collision;
+                StartCoroutine(Blink());
+                StartCoroutine(invincibilityFrames());
+            }
+            else
+            {
+                Respawn();
+            }
+            
         }
-        else
+
+    }
+
+    protected IEnumerator invincibilityFrames()
+    {
+        this.invincible = true;
+        yield return new WaitForSeconds(this.invincibilityDuration);
+        this.invincible = false;      
+    }
+
+    protected IEnumerator Blink()
+    {
+        float endTime = Time.time + this.invincibilityDuration;
+
+        while(Time.time < endTime)
         {
-            Respawn();
+            renderer.enabled = false;
+            yield return new WaitForSeconds(this.blinkDuration);
+            renderer.enabled = true;
+            yield return new WaitForSeconds(this.blinkDuration);
         }
     }
 
