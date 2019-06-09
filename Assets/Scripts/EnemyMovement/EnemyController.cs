@@ -8,8 +8,8 @@ using UnityEngine;
 /// </summary>
 public class EnemyController : AbstractController
 {
-    [SerializeField] EnemyMovementStrategy movementType = EnemyMovementStrategy.NoMovement;
-    [SerializeField] Animator animator;
+    [SerializeField] protected EnemyMovementStrategy movementType = EnemyMovementStrategy.NoMovement;
+    [SerializeField] protected Animator animator;
 
     // Start is called before the first frame update
     public override void Start()
@@ -21,10 +21,6 @@ public class EnemyController : AbstractController
         {
             case EnemyMovementStrategy.BackAndForth:
                 movementStrategy = new BackAndForthMovementStrategy(this);
-                break;
-
-            case EnemyMovementStrategy.Markov:
-                movementStrategy = new MarkovMovementStrategy(this);
                 break;
 
             case EnemyMovementStrategy.NoMovement:
@@ -41,7 +37,7 @@ public class EnemyController : AbstractController
     
 }
 
-enum EnemyMovementStrategy 
+public enum EnemyMovementStrategy 
 {
     BackAndForth,
     Markov,
