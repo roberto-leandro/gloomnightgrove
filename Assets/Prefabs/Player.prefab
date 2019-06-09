@@ -105,6 +105,8 @@ MonoBehaviour:
   currentLeftWall: {fileID: 0}
   currentRightWall: {fileID: 0}
   healthPoints: 3
+  invincibilityDuration: 2
+  blinkDuration: 0.1
   enemyKnockbackUpwardsForce: 7
   enemyKnockbackSidewaysForce: 200
   enemyHitstunDuration: 30

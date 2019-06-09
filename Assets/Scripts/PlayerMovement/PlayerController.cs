@@ -95,6 +95,7 @@ public class PlayerController : AbstractController
 
         // Setup for invincibility frames
         invincible = false;
+
     }
 
     // Update is called once per frame
@@ -223,6 +224,9 @@ public class PlayerController : AbstractController
 
     }
 
+    /// <summary>
+    /// Gives the player invincibility frames for some time.
+    /// </summary>
     protected IEnumerator invincibilityFrames()
     {
         this.invincible = true;
@@ -230,6 +234,9 @@ public class PlayerController : AbstractController
         this.invincible = false;      
     }
 
+    /// <summary>
+    /// Makes the player blink while the invincibility frames are active
+    /// </summary>
     protected IEnumerator Blink()
     {
         float endTime = Time.time + this.invincibilityDuration;
