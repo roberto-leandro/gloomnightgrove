@@ -17,6 +17,8 @@ public class PlayerController : AbstractController
     public bool CollidedWithEnemy { get { return enemyCollision != null; } set { if (!value) { enemyCollision = null; } } }
     public Collision2D EnemyCollision { get { return enemyCollision; } }
     [SerializeField] private int healthPoints;
+    [SerializeField] private GameObject[] objectives;
+    [SerializeField] private int obtainedObjectives;
     private bool invincible;
     [SerializeField] private int invincibilityDuration;
     [SerializeField] private float blinkDuration;
@@ -68,6 +70,7 @@ public class PlayerController : AbstractController
     protected Collider2D characterCollider;
     public Collider2D CharacterCollider { get { return characterCollider; } }
     [SerializeField] protected TextMeshProUGUI healthText;
+    [SerializeField] protected TextMeshProUGUI objectivesText;
     [SerializeField] protected Transform spawnPoint;
     private Renderer characterRenderer;
 
@@ -92,6 +95,7 @@ public class PlayerController : AbstractController
         // Custom stuff
         movementStrategy = new PlayerCrowMovementStrategy(this); // Default animal is crow
         UpdateHealthText();
+        UpdateObjectivesText();
 
         // Setup for invincibility frames
         invincible = false;
@@ -220,7 +224,6 @@ public class PlayerController : AbstractController
             }
             
         }
-
     }
 
     protected IEnumerator InvincibilityFrames()
@@ -230,6 +233,9 @@ public class PlayerController : AbstractController
         this.invincible = false;      
     }
 
+    /// <summary>
+    /// Makes the player blink while the invincibility frames are active
+    /// </summary>
     protected IEnumerator Blink()
     {
         float endTime = Time.time + this.invincibilityDuration;
@@ -243,25 +249,64 @@ public class PlayerController : AbstractController
         }
     }
 
-    protected override void OnFinishCollisionEnter(Collision2D collision)
+    protected override void OnFinishCollisionEnter(Collider2D collider)
     {
         SceneManager.LoadScene("MainMenu");
     }
 
+    protected override void OnObjectiveCollisionEnter(Collider2D collider)
+    {
+        // Disable the object collided against
+        collider.gameObject.SetActive(false);
+
+        // Update objectives
+        obtainedObjectives++;
+        if(obtainedObjectives == objectives.Length)
+        {
+            // If the player has all the objectives, go to the main menu
+            SceneManager.LoadScene("MainMenu");
+        } else
+        {
+            // Otherwise, update the objectives text
+            UpdateObjectivesText();
+        }
+    }
+
     /// <summary>
-    /// Go to main menu.
+    /// Write the current health points on screen.
     /// </summary>
     private void UpdateHealthText() 
     {
        healthText.SetText("Health: " + healthPoints.ToString());
     }
 
+    /// <summary>
+    /// Write the current health points on screen.
+    /// </summary>
+    private void UpdateObjectivesText()
+    {
+        if(objectives!=null && objectivesText != null)
+        {
+            objectivesText.SetText("Objectives: " + obtainedObjectives+"/"+ objectives.Length);
+        }
+        
+    }
+
+    /// <summary>
+    /// Move player to spawnpoint, remove their speed and restore their healthpoints.
+    /// Re-enable all objectives.
+    /// </summary>
     private void Respawn()
     {
         rigidBody.position = spawnPoint.position;
         rigidBody.velocity = new Vector2();
         healthPoints = 3;
         UpdateHealthText();
+        obtainedObjectives = 0;
+        UpdateObjectivesText();
+        for (int i = 0; i < objectives.Length; i++) {
+            objectives[i].SetActive(true);
+        }
     }
 
 }

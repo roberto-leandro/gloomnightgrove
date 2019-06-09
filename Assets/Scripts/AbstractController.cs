@@ -109,10 +109,10 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     /// <returns>a Vector2 object with the approrpiate multiplier applied.</returns>
     protected Vector2 DetermineFallMultiplier(Vector2 direction)
     {
-        if(applyFallMultiplier && !IsGrounded && direction.y < 0)
+        if (applyFallMultiplier && !IsGrounded && direction.y < 0)
         {
             // Add our fall multiplier minus one as unity already applied the multiplier one time
-            direction.y += Physics2D.gravity.y * (fallMultiplier-1);  
+            direction.y += Physics2D.gravity.y * (fallMultiplier - 1);
         }
         return direction;
     }
@@ -136,7 +136,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     /// This method may be used by subclasses to perform operations during fixed update other than moving, such as switching animal for the player character.
     /// This allows us add custom operations for each controller in FixedUpdate without overriding FixedUpdate(), as its only implementation should be in this class.
     /// </summary>
-    protected virtual void AdditionalFixedUpdateOperations(){}
+    protected virtual void AdditionalFixedUpdateOperations() { }
 
     /// <summary>
     /// Iterates through a Collision2D's list of ContactPoint2D objects, checking the normal of each point to determine what type of
@@ -197,7 +197,7 @@ public abstract class AbstractController : MonoBehaviour, IMovable
             {
                 OnRightWallCollisionEnter(collision);
             }
-            
+
             if (isGround)
             {
                 OnGroundCollisionEnter(collision);
@@ -208,19 +208,15 @@ public abstract class AbstractController : MonoBehaviour, IMovable
         {
             OnEnemyCollisionEnter(collision);
         }
-        else if (collision.gameObject.CompareTag("Finish"))
-        {
-            OnFinishCollisionEnter(collision);
-        }
     }
-    
+
     /// <summary>
     /// Called by Unity on all frames between the ones where a collision started and ened.
     /// If the collision is against terrain, we check whether it is ground or a wall and set the appropriate state variable to the
     /// object the character collided against.
     /// </summary>
     /// <param name="collision"></param>
-    void OnCollisionStay2D(Collision2D collision)
+    private void OnCollisionStay2D(Collision2D collision)
     {
         // Handle terrain collisions
         if (collision.gameObject.CompareTag("Terrain"))
@@ -298,14 +294,12 @@ public abstract class AbstractController : MonoBehaviour, IMovable
         //Debug.Log("Player is grounded");
     }
 
-    protected virtual void OnEnemyCollisionEnter(Collision2D collision){}
+    protected virtual void OnEnemyCollisionEnter(Collision2D collision) { }
 
     protected virtual void OnGroundCollisionStay(Collision2D collision)
     {
         currentGround = collision.gameObject;
     }
-
-    protected virtual void OnFinishCollisionEnter(Collision2D collision){}
 
     protected virtual void OnRightWallCollisionEnter(Collision2D collision)
     {
@@ -329,4 +323,21 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     {
         currentLeftWall = collision.gameObject;
     }
+
+    private void OnTriggerEnter2D(Collider2D collider)
+    {
+        if (collider.gameObject.CompareTag("Finish"))
+        {
+            OnFinishCollisionEnter(collider);
+        }
+        else if (collider.gameObject.CompareTag("Objective"))
+        {
+            OnObjectiveCollisionEnter(collider);
+        }
+    }
+
+
+    protected virtual void OnFinishCollisionEnter(Collider2D collider) { }
+
+    protected virtual void OnObjectiveCollisionEnter(Collider2D collider) { }
 }

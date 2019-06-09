@@ -15,6 +15,7 @@ public class MarkovMovementStrategy : AbstractMovementStrategy<KromavController>
 
     private MarkovMoves currentMove;
     private Transform playerPosition = GameObject.FindWithTag("Player").transform;
+    private int originalPosition;
 
     public override Vector2 DetermineMovement()
     {
@@ -27,7 +28,7 @@ public class MarkovMovementStrategy : AbstractMovementStrategy<KromavController>
 
             // Generate next action
             currentMove = (MarkovMoves)markovChain.generateNextState();
-            Debug.Log("generated " + currentMove);
+            //Debug.Log("generated " + currentMove);
 
             // Act on the generated action
             switch (currentMove)
@@ -51,6 +52,14 @@ public class MarkovMovementStrategy : AbstractMovementStrategy<KromavController>
 
                 case MarkovMoves.MoveToPlayer:
                     characterController.WalkToPlayer();
+                    if (playerPosition.position.x < characterController.transform.position.x)
+                    {
+                        originalPosition = 1;
+                    }
+                    else
+                    {
+                        originalPosition = -1;
+                    }
                     break;
             }
         }
@@ -58,14 +67,8 @@ public class MarkovMovementStrategy : AbstractMovementStrategy<KromavController>
          // If markov was moving towards the player, keep moving
          if(currentMove == MarkovMoves.MoveToPlayer && characterController.WalkingToPlayer)
          {
-            if(playerPosition.position.x > characterController.transform.position.x)
-            {
-                direction.x += characterController.MovementSpeed;
-            } else
-            {
-                direction.x += -characterController.MovementSpeed;
-            }
-        }
+             direction.x += -characterController.MovementSpeed * originalPosition;
+         }
 
         return direction;
     }

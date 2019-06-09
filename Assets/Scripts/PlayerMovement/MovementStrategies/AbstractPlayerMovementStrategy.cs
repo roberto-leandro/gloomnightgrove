@@ -107,5 +107,4 @@ public abstract class AbstractPlayerMovementStrategy : AbstractMovementStrategy<
 
         return direction;
     }
-
 }

@@ -30,7 +30,6 @@ public class PlayerCatMovementStrategy : AbstractPlayerMovementStrategy
                 {
                     characterController.WallHitstunDirection = true; // true is right
                     direction.x = characterController.WallJumpSidewaysForce;
-
                 }
                 else if (characterController.IsTouchingWallOnRight)
                 {

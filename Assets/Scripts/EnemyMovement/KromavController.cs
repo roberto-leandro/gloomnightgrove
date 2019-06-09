@@ -71,7 +71,6 @@ public class KromavController : EnemyController
         walkingToPlayer = true;
         yield return new WaitForSeconds(WalkToPlayerDuration);
         walkingToPlayer = false;
-        Debug.Log("stahp");
     }
 
     /// <summary>
@@ -134,25 +133,25 @@ public class KromavController : EnemyController
 
     private void SetIdle()
     {
-        Debug.Log("set idle true");
+        //Debug.Log("set idle true");
         isIdle = true;
     }
 
     private void SetJumpFalse()
     {
-        Debug.Log("set jump false");
+        //Debug.Log("set jump false");
         jump = false;
     }
 
     private void SetBiteFalse()
     {
-        Debug.Log("set bite false");
+        //Debug.Log("set bite false");
         bite = false;
     }
 
     private void SetSpikesFalse()
     {
-        Debug.Log("set spikes false");
+        //Debug.Log("set spikes false");
         spikes = false;
     }
 }
