@@ -3,16 +3,47 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class KeyBind : MonoBehaviour
+/// <summary>
+/// Singleton class to manage user input with keybindings that can be changed in runtime.
+/// </summary>
+public class KeyBinding : MonoBehaviour
 {
     private Dictionary<string, KeyCode> keys = new Dictionary<string, KeyCode>();
+    public Dictionary<string, KeyCode> Keys { get { return keys; } }
     [SerializeField] public Text up, down, left, right, jump, switchAnimal;
     private GameObject currentKey;
     private Color32 normal = new Color32(244,78,242,255);
     private Color32 selected = new Color32(109, 26, 108, 255);
 
-    // Start is called before the first frame update
-    void Start()
+    // Singleton instance
+    private static KeyBinding _instance;
+
+    public static KeyBinding Instance
+    {
+        get
+        {
+            return _instance;
+        }
+    }
+
+    private void Awake()
+    {
+        if (_instance == null)
+        {
+            _instance = this;
+        }
+        else if (_instance != this)
+        {
+            //Destroy the instance if it is different from an existing instance.
+            Destroy(gameObject);
+        }
+
+        // Make sure the instance is kept alive at all times
+        DontDestroyOnLoad(gameObject);
+        SetDefaultKeys();
+    }
+
+    public void SetDefaultKeys()
     {
         keys.Add("Up", KeyCode.UpArrow);
         keys.Add("Down", KeyCode.DownArrow);
@@ -31,6 +62,16 @@ public class KeyBind : MonoBehaviour
         switchAnimal.text = keys["Switch"].ToString();
     }
 
+    public bool GetKeyDown(string keyName)
+    {
+        return Input.GetKeyDown(keys[keyName]);
+    }
+
+    public bool GetKey(string keyName)
+    {
+        return Input.GetKey(keys[keyName]);
+    }
+
     private void OnGUI()
     {
         if (currentKey != null) {
@@ -45,7 +86,7 @@ public class KeyBind : MonoBehaviour
         }
     }
 
-    public void changeKey(GameObject key) {
+    public void ChangeKey(GameObject key) {
 
         if (currentKey != null) {
             currentKey.GetComponent<Image>().color = normal;
@@ -54,35 +95,5 @@ public class KeyBind : MonoBehaviour
         currentKey = key;
         currentKey.GetComponent<Image>().color = selected;
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetKeyDown(keys["Up"]))
-        {
-            Debug.Log("Up we go");
-        }
-
-        if (Input.GetKeyDown(keys["Down"]))
-        {
-            Debug.Log("Down we go");
-        }
-        if (Input.GetKeyDown(keys["Right"]))
-        {
-            Debug.Log("Going to the Right");
-        }
-
-        if (Input.GetKeyDown(keys["Left"]))
-        {
-            Debug.Log("Going to the Left");
-        }
-
-        if (Input.GetKeyDown(keys["Jump"]))
-        {
-            Debug.Log("Juuuuump... desu mo");
-        }
-        if (Input.GetKeyDown(keys["Switch"])) {
-            Debug.Log("Animal Change!");
-        }
-    }
+  
 }

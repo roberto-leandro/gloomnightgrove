@@ -23,6 +23,9 @@ public class PlayerController : AbstractController
     [SerializeField] private int invincibilityDuration;
     [SerializeField] private float blinkDuration;
 
+    // Input manager to be able to change keys during runtime
+    private KeyBinding keyBinding;
+
     // The controls inputted by the player
     protected bool jump;
     public bool Jump { get { return jump; } set { jump = value; } }
@@ -86,6 +89,8 @@ public class PlayerController : AbstractController
         ultharObject = transform.Find("Ulthar").gameObject;
         clemmObject = transform.Find("Clemm").gameObject;
         characterRenderer = GetComponent<Renderer>();
+
+        keyBinding = KeyBinding.Instance;
         
         // Clemm is the default animal
         isCrowActive = true;
@@ -114,21 +119,35 @@ public class PlayerController : AbstractController
     private void ReadPlayerInput()
     {
         // Determine horizontal movement
-        // We use Input.GetAxisRaw to avoid Unity's automatic smoothing to enable the player to stop on a dime
+
+        // First we attempt to use Input.GetAxisRaw in case the player is using a controller.
+        // We use GetAxisRaw to avoid Unity's automatic smoothing to enable the player to stop on a dime.
         // Multiply the input by our movement speed to allow controller users to input analog movement 
         horizontalMovement = Input.GetAxisRaw("Horizontal") * movementSpeed;
+
+        // If no axis movement was detected, read the keys with out custom keybinding
+        if(horizontalMovement == 0)
+        {
+            if(keyBinding.GetKey("Left") && !keyBinding.GetKey("Right"))
+            {
+                horizontalMovement = -movementSpeed;
+            } else if (!keyBinding.GetKey("Left") && keyBinding.GetKey("Right"))
+            {
+                horizontalMovement = movementSpeed;
+            }
+        }
 
         // Determine if player wants to jump
         // We only want to change jump if it is already false, changing its value when its true can result in missed inputs
         if (!jump)
         {
-            jump = Input.GetButtonDown("Jump");
+            jump = keyBinding.GetKeyDown("Jump");
         }
 
         // Check if the current animal should be switched, using the same method as with jumps
         if (!switchAnimal)
         {
-            switchAnimal = Input.GetButtonDown("SwitchAnimal");
+            switchAnimal = keyBinding.GetKeyDown("Switch");
         }
         
     }
