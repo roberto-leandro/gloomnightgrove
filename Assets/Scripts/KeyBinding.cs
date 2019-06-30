@@ -15,6 +15,8 @@ public class KeyBinding : MonoBehaviour
     private Color32 normal = new Color32(244,78,242,255);
     private Color32 selected = new Color32(109, 26, 108, 255);
 
+    private static object _lock = new object();
+
     // Singleton instance
     private static KeyBinding _instance;
 
@@ -22,7 +24,22 @@ public class KeyBinding : MonoBehaviour
     {
         get
         {
-            return _instance;
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    // Need to create a new GameObject to attach the singleton to.
+                    var singletonObject = new GameObject();
+                    _instance = singletonObject.AddComponent<KeyBinding>();
+                    singletonObject.name = "Rebind";
+
+                    // Make instance persistent.
+                    DontDestroyOnLoad(singletonObject);
+
+                }
+
+                return _instance;
+            }
         }
     }
 
@@ -39,8 +56,8 @@ public class KeyBinding : MonoBehaviour
         }
 
         // Make sure the instance is kept alive at all times
+        _instance.SetDefaultKeys();
         DontDestroyOnLoad(gameObject);
-        SetDefaultKeys();
     }
 
     public void SetDefaultKeys()
