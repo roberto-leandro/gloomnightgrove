@@ -62,6 +62,7 @@ public class KeyBinding : MonoBehaviour
 
     public void SetDefaultKeys()
     {
+        keys.Clear();
         keys.Add("Up", KeyCode.UpArrow);
         keys.Add("Down", KeyCode.DownArrow);
         keys.Add("Right", KeyCode.RightArrow);
@@ -70,13 +71,17 @@ public class KeyBinding : MonoBehaviour
         keys.Add("Jump", KeyCode.Z);
         keys.Add("Switch", KeyCode.X);
 
-        up.text = keys["Up"].ToString();
-        down.text = keys["Down"].ToString();
-        left.text = keys["Left"].ToString();
-        right.text = keys["Right"].ToString();
+        if(up!=null)
+        {
+            up.text = keys["Up"].ToString();
+            down.text = keys["Down"].ToString();
+            left.text = keys["Left"].ToString();
+            right.text = keys["Right"].ToString();
 
-        jump.text = keys["Jump"].ToString();
-        switchAnimal.text = keys["Switch"].ToString();
+            jump.text = keys["Jump"].ToString();
+            switchAnimal.text = keys["Switch"].ToString();
+        }
+
     }
 
     public bool GetKeyDown(string keyName)

@@ -29,6 +29,9 @@ public abstract class AbstractController : MonoBehaviour, IMovable
     // Indicates if the fall multiplier should be applied
     [SerializeField] private bool applyFallMultiplier = false;
 
+    // Sets a limit to how fast the character can fall
+    [SerializeField] private float maxFallSpeed = -18f;
+
     // State variables common to most characters
     // Current walls and ground are stored to be able to handle them properly on collision exits
     [SerializeField] protected GameObject currentGround;
@@ -76,6 +79,9 @@ public abstract class AbstractController : MonoBehaviour, IMovable
 
         // Calculate fall multiplier
         direction = DetermineFallMultiplier(direction);
+
+        // Apply max fall seppd
+        direction.y = Mathf.Max(direction.y, maxFallSpeed);
 
         // Move by setting the rigidbody's velocity
         rigidBody.velocity = direction;
@@ -334,10 +340,21 @@ public abstract class AbstractController : MonoBehaviour, IMovable
         {
             OnObjectiveCollisionEnter(collider);
         }
+        else if (collider.gameObject.CompareTag("BottomlessPit"))
+        {
+            OnBottomlessPitCollisionEnter(collider);
+        }
+        else if (collider.gameObject.CompareTag("Checkpoint"))
+        {
+            OnCheckpointCollisionEnter(collider);
+        }
     }
-
 
     protected virtual void OnFinishCollisionEnter(Collider2D collider) { }
 
     protected virtual void OnObjectiveCollisionEnter(Collider2D collider) { }
+
+    protected virtual void OnBottomlessPitCollisionEnter(Collider2D collider) { }
+
+    protected virtual void OnCheckpointCollisionEnter(Collider2D collider) { }
 }

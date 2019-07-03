@@ -160,7 +160,6 @@ public class PlayerController : AbstractController
     /// </summary>
     void SwitchAnimal()
     {
-        //TODO code to change sprite
         // Change movement strategy and set the current animator, according to the currently active animal.
         if (isCrowActive)
         {
@@ -229,6 +228,7 @@ public class PlayerController : AbstractController
     {
         if (!invincible)
         {
+            isDoublejumpAvailable = true;
             healthPoints = healthPoints - 1;
             if (healthPoints > 0)
             {
@@ -271,6 +271,16 @@ public class PlayerController : AbstractController
     protected override void OnFinishCollisionEnter(Collider2D collider)
     {
         SceneManager.LoadScene("MainMenu");
+    }
+
+    protected override void OnBottomlessPitCollisionEnter(Collider2D collider)
+    {
+        Respawn();
+    }
+
+    protected override void OnCheckpointCollisionEnter(Collider2D collider)
+    {
+        spawnPoint = collider.transform;
     }
 
     protected override void OnObjectiveCollisionEnter(Collider2D collider)
